@@ -25,6 +25,12 @@ export function EditorTabsProvider({ children }: { children: ReactNode }) {
   tabsRef.current = tabs;
 
   const queueRef = useRef(new AutoSaveQueue());
+  const [savingIds, setSavingIds] = useState<ReadonlySet<string>>(new Set());
+
+  useEffect(() => {
+    const queue = queueRef.current;
+    return queue.onSavingChange(setSavingIds);
+  }, []);
 
   const open = useCallback(async (path: string) => {
     const existing = tabsRef.current.find((t) => t.path === path);
@@ -113,9 +119,11 @@ export function EditorTabsProvider({ children }: { children: ReactNode }) {
     })();
   });
 
+  const isSaving = useCallback((id: string) => savingIds.has(id), [savingIds]);
+
   const value = useMemo(
-    () => ({ tabs, activeTabId, open, close, setActive, setBuffer, flushAll }),
-    [tabs, activeTabId, open, close, setActive, setBuffer, flushAll],
+    () => ({ tabs, activeTabId, open, close, setActive, setBuffer, flushAll, isSaving }),
+    [tabs, activeTabId, open, close, setActive, setBuffer, flushAll, isSaving],
   );
 
   return <EditorTabsContext.Provider value={value}>{children}</EditorTabsContext.Provider>;

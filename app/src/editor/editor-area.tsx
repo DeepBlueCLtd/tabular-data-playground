@@ -1,10 +1,12 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import type { Monaco } from '@monaco-editor/react';
+import type { editor } from 'monaco-editor';
 import { useTheme } from '@/theme/use-theme';
 import { useVfs } from '@/fs/use-vfs';
 import { MONACO_CDN_VS_URL } from './config';
 import { registerJsonSchemas } from './json-schemas';
 import { languageForPath } from './language';
+import { useEditorFocus } from './use-editor-focus';
 import { useEditorTabs } from './use-editor-tabs';
 
 const MonacoEditor = lazy(() =>
@@ -26,7 +28,12 @@ export function EditorArea() {
   const { tabs, activeTabId, open, close, setActive, setBuffer } = useEditorTabs();
   const { theme } = useTheme();
   const { vfs } = useVfs();
+  const { setCursor } = useEditorFocus();
   const [loaderConfigured, setLoaderConfigured] = useState(false);
+
+  useEffect(() => {
+    if (activeTabId === null) setCursor(null);
+  }, [activeTabId, setCursor]);
 
   useEffect(() => {
     if (loaderConfigured) return;
@@ -106,8 +113,13 @@ export function EditorArea() {
               value={activeTab.content}
               language={languageForPath(activeTab.path)}
               theme={theme === 'dark' ? 'vs-dark' : 'vs'}
-              onMount={(_editor, monaco: Monaco) => {
+              onMount={(ed: editor.IStandaloneCodeEditor, monaco: Monaco) => {
                 registerJsonSchemas(monaco);
+                const pos = ed.getPosition();
+                if (pos) setCursor({ line: pos.lineNumber, column: pos.column });
+                ed.onDidChangeCursorPosition((e) => {
+                  setCursor({ line: e.position.lineNumber, column: e.position.column });
+                });
               }}
               onChange={(value) => {
                 setBuffer(activeTab.id, value ?? '');

@@ -1,10 +1,13 @@
 import { AUTOSAVE_DEBOUNCE_MS } from './config';
 
 type Timer = ReturnType<typeof setTimeout>;
+type Listener = (savingIds: ReadonlySet<string>) => void;
 
 export class AutoSaveQueue {
   private timers = new Map<string, Timer>();
   private pendingFlush = new Map<string, () => Promise<void>>();
+  private saving = new Set<string>();
+  private listeners = new Set<Listener>();
 
   schedule(id: string, save: () => Promise<void>): void {
     const existing = this.timers.get(id);
@@ -13,12 +16,11 @@ export class AutoSaveQueue {
     const t = setTimeout(() => {
       this.timers.delete(id);
       this.pendingFlush.delete(id);
-      void save().catch((err) => console.error('[autosave]', err));
+      void this.runSave(id, save);
     }, AUTOSAVE_DEBOUNCE_MS);
     this.timers.set(id, t);
   }
 
-  /** Run any pending save for `id` immediately. */
   async flush(id: string): Promise<void> {
     const t = this.timers.get(id);
     const save = this.pendingFlush.get(id);
@@ -27,9 +29,7 @@ export class AutoSaveQueue {
       this.timers.delete(id);
     }
     this.pendingFlush.delete(id);
-    if (save) {
-      await save();
-    }
+    if (save) await this.runSave(id, save);
   }
 
   cancel(id: string): void {
@@ -43,5 +43,40 @@ export class AutoSaveQueue {
     for (const t of this.timers.values()) clearTimeout(t);
     this.timers.clear();
     this.pendingFlush.clear();
+  }
+
+  isSaving(id: string): boolean {
+    return this.saving.has(id);
+  }
+
+  onSavingChange(listener: Listener): () => void {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  private async runSave(id: string, save: () => Promise<void>): Promise<void> {
+    this.saving.add(id);
+    this.notify();
+    try {
+      await save();
+    } catch (e) {
+      console.error('[autosave]', e);
+    } finally {
+      this.saving.delete(id);
+      this.notify();
+    }
+  }
+
+  private notify(): void {
+    const snapshot: ReadonlySet<string> = new Set(this.saving);
+    for (const l of Array.from(this.listeners)) {
+      try {
+        l(snapshot);
+      } catch (e) {
+        console.error('[autosave] listener', e);
+      }
+    }
   }
 }

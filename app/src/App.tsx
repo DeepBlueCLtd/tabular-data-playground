@@ -1,4 +1,5 @@
 import { AppShell } from '@/components/shell/app-shell';
+import { EditorFocusProvider } from '@/editor/editor-focus-provider';
 import { EditorTabsProvider } from '@/editor/editor-tabs-provider';
 import { PyodideProvider } from '@/pyodide/pyodide-provider';
 import { ThemeProvider } from '@/theme/theme-provider';
@@ -8,7 +9,9 @@ export default function App() {
     <ThemeProvider>
       <PyodideProvider>
         <EditorTabsProvider>
-          <AppShell />
+          <EditorFocusProvider>
+            <AppShell />
+          </EditorFocusProvider>
         </EditorTabsProvider>
       </PyodideProvider>
     </ThemeProvider>

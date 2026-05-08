@@ -10,6 +10,8 @@ export interface EditorTabsContextValue {
   setBuffer: (id: string, content: string) => void;
   /** Force-flush all pending saves; used by #26 pre-execution flush. */
   flushAll: () => Promise<void>;
+  /** True if a save is in flight for the given tab id. */
+  isSaving: (id: string) => boolean;
 }
 
 export const EditorTabsContext = createContext<EditorTabsContextValue | null>(null);

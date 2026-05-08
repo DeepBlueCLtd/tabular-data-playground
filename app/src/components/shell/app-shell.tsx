@@ -5,7 +5,7 @@ import { ActivityBar, type ActivityEntry } from './activity-bar';
 import { SidePanel } from './side-panel';
 import { EditorArea } from '@/editor/editor-area';
 import { TerminalPanel } from './terminal-panel';
-import { StatusBarPlaceholder } from './status-bar-placeholder';
+import { StatusBar } from './status-bar';
 
 export function AppShell() {
   const [active, setActive] = useState<ActivityEntry>('lessons');
@@ -50,7 +50,7 @@ export function AppShell() {
           </Panel>
         </PanelGroup>
       </div>
-      <StatusBarPlaceholder />
+      <StatusBar />
     </div>
   );
 }
