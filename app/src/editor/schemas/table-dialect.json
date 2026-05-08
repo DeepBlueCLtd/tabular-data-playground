@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://specs.frictionlessdata.io/schemas/table-dialect.json",
+  "title": "Table Dialect (placeholder)",
+  "description": "Minimal placeholder bundled with the app. Runtime fetch from specs.frictionlessdata.io upgrades this when available.",
+  "type": "object",
+  "properties": {
+    "delimiter": { "type": "string", "default": "," },
+    "lineTerminator": { "type": "string", "default": "\\r\\n" },
+    "quoteChar": { "type": "string", "default": "\"" },
+    "doubleQuote": { "type": "boolean", "default": true },
+    "escapeChar": { "type": "string" },
+    "nullSequence": { "type": "string" },
+    "skipInitialSpace": { "type": "boolean", "default": false },
+    "header": { "type": "boolean", "default": true },
+    "headerRows": { "type": "array", "items": { "type": "integer", "minimum": 1 } },
+    "headerJoin": { "type": "string", "default": " " },
+    "commentChar": { "type": "string", "maxLength": 1 },
+    "csvddfVersion": { "type": "string" },
+    "caseSensitiveHeader": { "type": "boolean", "default": false }
+  }
+}

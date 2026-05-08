@@ -137,6 +137,19 @@ edges:
   drops to memory-only — files survive the session but not a
   reload. The facade does not detect or warn about this in v1.
 
+### Bundled JSON Schemas are placeholders
+
+JSON Schema validation in the editor (#14) ships minimal
+placeholder schemas at `app/src/editor/schemas/{data-package,
+table-dialect,table-schema}.json`. They catch obvious mistakes
+(missing required fields, wrong field type) but are NOT the
+canonical Frictionless specs. On editor mount, the app fetches
+the canonical schemas from `specs.frictionlessdata.io` with a 2 s
+timeout and replaces the bundle on success. If the fetch fails
+(offline, CORS, outage) users keep the placeholder validation —
+silent fallback. Update the placeholders when the canonical specs
+move.
+
 ### Monaco loaded from jsdelivr CDN
 
 The editor (#13) uses `@monaco-editor/react`'s default loader,

@@ -1,7 +1,9 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
+import type { Monaco } from '@monaco-editor/react';
 import { useTheme } from '@/theme/use-theme';
 import { useVfs } from '@/fs/use-vfs';
 import { MONACO_CDN_VS_URL } from './config';
+import { registerJsonSchemas } from './json-schemas';
 import { languageForPath } from './language';
 import { useEditorTabs } from './use-editor-tabs';
 
@@ -104,6 +106,9 @@ export function EditorArea() {
               value={activeTab.content}
               language={languageForPath(activeTab.path)}
               theme={theme === 'dark' ? 'vs-dark' : 'vs'}
+              onMount={(_editor, monaco: Monaco) => {
+                registerJsonSchemas(monaco);
+              }}
               onChange={(value) => {
                 setBuffer(activeTab.id, value ?? '');
               }}
