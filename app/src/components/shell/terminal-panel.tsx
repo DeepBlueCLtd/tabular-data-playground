@@ -2,8 +2,9 @@ import { PyodideLoadingIndicator } from '@/pyodide/pyodide-loading-indicator';
 import { usePyodide } from '@/pyodide/use-pyodide';
 
 export function TerminalPanel() {
-  const { status, running, cancel } = usePyodide();
+  const { status, running, cancel, reload } = usePyodide();
   const ready = status === 'ready';
+  const errored = status === 'error';
 
   return (
     <section
@@ -23,6 +24,16 @@ export function TerminalPanel() {
               aria-label="Cancel running command"
             >
               Cancel
+            </button>
+          )}
+          {errored && (
+            <button
+              type="button"
+              onClick={reload}
+              className="rounded border border-border bg-muted/40 px-2 py-0.5 text-xs hover:bg-muted"
+              aria-label="Reload Python runtime"
+            >
+              Reload runtime
             </button>
           )}
           <PyodideLoadingIndicator />

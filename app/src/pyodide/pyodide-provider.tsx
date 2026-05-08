@@ -207,9 +207,22 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
   );
 
   const reload = useCallback(() => {
-    // #30 will surface a UI button; mechanism re-uses cancel().
-    cancel();
-  }, [cancel]);
+    // Works whether or not a worker is currently alive (covers
+    // crash-recovery from `status === 'error'` where workerRef
+    // was nulled out).
+    for (const p of pendingRef.current.values()) {
+      p.reject(new Error('Reloaded'));
+    }
+    pendingRef.current.clear();
+    runningCountRef.current = 0;
+    setRunning(false);
+    const worker = workerRef.current;
+    if (worker) {
+      worker.terminate();
+      workerRef.current = null;
+    }
+    spawnWorker();
+  }, [spawnWorker]);
 
   // Dev-only smoke surface. Stripped from production by Vite.
   useEffect(() => {
