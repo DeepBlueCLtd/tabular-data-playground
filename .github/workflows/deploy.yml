@@ -8,6 +8,11 @@ on:
 permissions:
   contents: read
 
+# Opt-in to Node 24 for JavaScript actions ahead of the 2026-06 default
+# flip. Affects every action in this workflow regardless of its v-tag.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 concurrency:
   group: pages
   cancel-in-progress: false
