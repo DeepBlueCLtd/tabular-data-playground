@@ -11,7 +11,11 @@
 
 import { PYODIDE_VERSION, PYODIDE_INDEX_URL } from "./pyodide.config.js";
 
-const SAMPLE_CSV_PATH = "/sample.csv";
+// Frictionless 5.x rejects absolute paths via its "not safe" check, so
+// we write the sample under Pyodide's default working directory and
+// pass it to the CLI as a relative filename.
+const SAMPLE_CSV_FS_PATH = "/home/pyodide/sample.csv";
+const SAMPLE_CSV_RELATIVE = "sample.csv";
 const SAMPLE_CSV_URL = "./sample.csv";
 
 const STEP_NAMES = [
@@ -161,15 +165,15 @@ print("frictionless installed via micropip")
     if (step2.exit_code !== 0) return finalize(record, t0);
 
     // Step 3 — frictionless_version
+    // The CLI entry-point is exposed as `frictionless.__main__:console`
+    // (a Typer app). `frictionless.console.program` does NOT exist —
+    // discovered while building this spike (recorded in
+    // docs/limitations.md and research.md R4 follow-up).
     const step3 = await runStep("frictionless_version", async () => {
       const captured = await runPythonCaptured(`
-import sys
-from frictionless.console import program
-try:
-    program(["--version"], standalone_mode=False)
-except SystemExit as e:
-    sys.exit_code = e.code if isinstance(e.code, int) else 0
-`, /* fallbackCli */ ["--version"]);
+from frictionless.__main__ import console as _cli_app
+_cli_app(prog_name="frictionless", standalone_mode=False, args=["--version"])
+`);
       return captured;
     });
     record.steps.push(step3);
@@ -181,7 +185,6 @@ except SystemExit as e:
 
     // Step 4 — frictionless_validate
     const step4 = await runStep("frictionless_validate", async () => {
-      // Fetch the bundled CSV and write to Pyodide's virtual FS at /sample.csv
       const resp = await fetch(SAMPLE_CSV_URL);
       if (!resp.ok) {
         return {
@@ -192,15 +195,15 @@ except SystemExit as e:
         };
       }
       const csvBytes = new Uint8Array(await resp.arrayBuffer());
-      pyodide.FS.writeFile(SAMPLE_CSV_PATH, csvBytes);
+      pyodide.FS.writeFile(SAMPLE_CSV_FS_PATH, csvBytes);
+      // chdir to the directory that holds the CSV so we can pass a
+      // relative path (Frictionless rejects absolute paths as "not safe").
       const captured = await runPythonCaptured(`
-import sys
-from frictionless.console import program
-try:
-    program(["validate", "${SAMPLE_CSV_PATH}"], standalone_mode=False)
-except SystemExit as e:
-    sys.exit_code = e.code if isinstance(e.code, int) else 0
-`, /* fallbackCli */ ["validate", SAMPLE_CSV_PATH]);
+import os
+os.chdir("/home/pyodide")
+from frictionless.__main__ import console as _cli_app
+_cli_app(prog_name="frictionless", standalone_mode=False, args=["validate", "${SAMPLE_CSV_RELATIVE}"])
+`);
       return captured;
     });
     record.steps.push(step4);

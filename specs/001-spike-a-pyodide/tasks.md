@@ -81,11 +81,11 @@ both `frictionless` calls. Repeat in latest Firefox.
 **Purpose**: Run the spike on both browsers and produce the durable
 Phase 0 artefact. This is the deliverable per Constitution Principle V.
 
-- [ ] T014 [US1] **PENDING (manual)** — Run on latest Chrome on a developer-class machine; click Run with cleared cache; verify PASS in under 60 s (spec SC-001); click Copy results
-- [ ] T015 [US1] **PENDING (manual)** — Run on latest Firefox on a developer-class machine; click Run; verify PASS (spec SC-002); click Copy results
-- [~] T016 [US1] Stub of `docs/architecture.md` Phase 0 section with PENDING markers for Chrome and Firefox run-record blocks; paste actual records when T014/T015 land (spec FR-009, FR-011, SC-003)
-- [~] T017 [US1] Stub `Spike A — go/no-go` line in `docs/architecture.md` marked PENDING; finalise after T014/T015 (spec SC-003)
-- [~] T018 [US1] Stub of `docs/limitations.md` with PENDING markers for Spike A observations; finalise after T014/T015 (Constitution Principle VII; spec FR-010, SC-005)
+- [X] T014 [US1] Headless Chromium 141 run via Playwright harness (`specs/001-spike-a-pyodide/verify/run-spikes.mjs`) — PASS in ~8.4 s; record at `verify/results/chromium.{md,json}` (spec SC-001 met against Chromium; user to also reproduce in latest Chrome stable when convenient)
+- [X] T015 [US1] Headless Firefox 142 run via Playwright harness — PASS in ~30.5 s (under 60 s); record at `verify/results/firefox.{md,json}` (spec SC-002)
+- [X] T016 [US1] `docs/architecture.md` Phase 0 section finalised with both run records, pinned Pyodide URL, resolved Frictionless version (5.19.0), and per-step elapsed/exit values (spec FR-009, FR-011, SC-003)
+- [X] T017 [US1] **Go/no-go: Go.** Recorded in `docs/architecture.md` (spec SC-003)
+- [X] T018 [US1] `docs/limitations.md` updated with four real findings: Frictionless CLI entry-point correction, "path is not safe" workaround, Pyodide cold-start ~3.6× slower on Firefox, `crossOriginIsolated === false` confirmed (Constitution Principle VII; spec FR-010, SC-005)
 
 **Checkpoint**: E0 evidence for Spike A is committed and readable in `docs/`.
 

@@ -116,6 +116,19 @@ behave under Pyodide?" here saves work later.
   Pyodide; that fallback would be a finding worth recording.
 - *Spawn Pyodide subprocess*: not applicable — Pyodide doesn't fork.
 
+**Correction made during implementation (2026-05-08)**: The original
+plan above named `frictionless.console.program` as the CLI entry-point.
+That symbol does not exist in Frictionless 5.19.0. The actual CLI
+entry-point is the Typer app at `frictionless.__main__:console`,
+invoked as
+`console(prog_name="frictionless", standalone_mode=False, args=[...])`.
+Additionally, Frictionless's resource loader rejects absolute paths
+(`/sample.csv`) as "not safe", so the spike writes its sample CSV to
+`/home/pyodide/sample.csv` and `os.chdir()`-s into that directory
+before calling the CLI with a relative filename. Both findings are
+recorded in `docs/limitations.md`; both will bite the eventual command
+bridge (E1 item #28) and virtual FS facade (E1 item #11).
+
 ---
 
 ## R5. SharedArrayBuffer / cross-origin isolation
