@@ -137,6 +137,24 @@ edges:
   drops to memory-only — files survive the session but not a
   reload. The facade does not detect or warn about this in v1.
 
+### Drag-and-drop importer caps and quirks
+
+The drag-and-drop importer (#17) uses
+`DataTransferItem.webkitGetAsEntry()` to walk dropped folders.
+Sharp edges:
+
+- **10 MB per-file hard cap.** Files larger than 10,485,760 bytes
+  are rejected with a modal; the rest of the batch is also
+  rejected (we surface the first oversized file's name and bail
+  out for predictability).
+- **Symlinks are not represented** by the FileSystem entries API
+  in browsers. Dropping a symlinked folder follows the link
+  silently if the OS resolves it; otherwise the entry is missing.
+- **Large folders may stall the UI** while
+  `readEntries` paginates. v1 does not show a progress indicator;
+  drops over a few hundred files are out of scope for the
+  evaluation artefact.
+
 ### Bundled JSON Schemas are placeholders
 
 JSON Schema validation in the editor (#14) ships minimal

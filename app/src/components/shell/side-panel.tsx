@@ -1,3 +1,4 @@
+import { DragDropImporter } from '@/file-tree/drag-drop-importer';
 import { FileTree } from '@/file-tree/file-tree';
 import type { ActivityEntry } from './activity-bar';
 
@@ -16,7 +17,9 @@ export function SidePanel({ active }: SidePanelProps) {
           <p>Curriculum index lands here (#37). Lesson content via #38.</p>
         </div>
       ) : (
-        <FileTree />
+        <DragDropImporter>
+          <FileTree />
+        </DragDropImporter>
       )}
     </aside>
   );
