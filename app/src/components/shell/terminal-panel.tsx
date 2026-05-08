@@ -1,10 +1,18 @@
+import { useCallback } from 'react';
 import { PyodideLoadingIndicator } from '@/pyodide/pyodide-loading-indicator';
 import { usePyodide } from '@/pyodide/use-pyodide';
+import { TerminalView, type TerminalApi } from '@/terminal/terminal';
 
 export function TerminalPanel() {
   const { status, running, cancel, reload } = usePyodide();
   const ready = status === 'ready';
   const errored = status === 'error';
+
+  const handleCommand = useCallback(async (line: string, api: TerminalApi) => {
+    const trimmed = line.trim();
+    if (!trimmed) return;
+    api.print(`> command "${trimmed}" — mini-shell wires in via #22-#25.\n`);
+  }, []);
 
   return (
     <section
@@ -39,10 +47,12 @@ export function TerminalPanel() {
           <PyodideLoadingIndicator />
         </div>
       </div>
-      <div className="flex flex-1 flex-col p-3 font-mono text-xs">
-        {ready ? (
-          <span className="text-muted-foreground">xterm.js + mini-shell land here (#21).</span>
-        ) : (
+      {ready ? (
+        <div className="flex-1 overflow-hidden bg-background p-2">
+          <TerminalView onCommand={handleCommand} />
+        </div>
+      ) : (
+        <div className="flex flex-1 flex-col p-3 font-mono text-xs">
           <div
             role="textbox"
             aria-disabled="true"
@@ -52,8 +62,8 @@ export function TerminalPanel() {
           >
             <span aria-hidden>$ </span>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </section>
   );
 }
