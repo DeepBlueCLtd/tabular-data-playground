@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test';
 
+// Smoke assertions only — no screenshots. Run via `pnpm test:e2e`.
+// Stakeholder-shareable screenshots are captured on demand via
+// `pnpm capture:screenshots` (see e2e/capture-screenshots.spec.ts).
 test.describe('IDE shell smoke', () => {
   test('renders chrome and surfaces Pyodide status', async ({ page }) => {
     await page.goto('/');
@@ -23,20 +26,16 @@ test.describe('IDE shell smoke', () => {
 
     // Status bar at the bottom.
     await expect(page.getByRole('contentinfo', { name: /status bar/i })).toBeVisible();
-
-    await page.screenshot({ path: 'e2e/screenshots/01-shell-loading.png', fullPage: true });
   });
 
   test('editor empty state offers a sample file', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('button', { name: /open sample csv/i })).toBeVisible();
-    await page.screenshot({ path: 'e2e/screenshots/02-editor-empty-state.png', fullPage: true });
   });
 
   test('files panel shows file tree placeholder before runtime', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: /files/i }).click();
     await expect(page.getByText(/Reset workspace/i)).toBeVisible();
-    await page.screenshot({ path: 'e2e/screenshots/03-files-panel.png', fullPage: true });
   });
 });

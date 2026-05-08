@@ -5,6 +5,9 @@ const HOST = '127.0.0.1';
 
 export default defineConfig({
   testDir: './e2e',
+  // The capture suite ships under e2e/capture/ and is invoked
+  // separately via `pnpm capture:screenshots` (playwright.capture.config.ts).
+  testIgnore: /capture\//,
   timeout: 60_000,
   expect: { timeout: 15_000 },
   reporter: process.env.CI ? [['line'], ['html', { open: 'never' }]] : 'list',

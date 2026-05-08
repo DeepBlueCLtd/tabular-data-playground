@@ -15,7 +15,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "capture:screenshots": "playwright test --config playwright.capture.config.ts"
   },
   "dependencies": {
     "@monaco-editor/react": "4.6.0",
