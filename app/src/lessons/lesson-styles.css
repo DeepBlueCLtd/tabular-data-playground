@@ -122,6 +122,14 @@
 
 .lesson-code-block {
   margin: 0.5rem 0;
+  border-left: 3px solid transparent;
+  padding-left: 0.25rem;
+  transition: border-color 0.2s ease;
+}
+
+/* Most-recently-clicked Run target gets an accent (#40 FR-004). */
+.lesson-code-block:has([data-lesson-code-active='true']) {
+  border-left-color: hsl(var(--primary));
 }
 
 .lesson-code-actions {

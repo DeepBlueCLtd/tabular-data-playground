@@ -166,6 +166,22 @@ test.describe('Copy + Run buttons (#39)', () => {
     // sandbox may not reach ready. The disable-state at first paint
     // is the assertion that proves FR-009.
   });
+
+  test('Most-recent block is marked when Pyodide is ready (#40 FR-004)', async ({ page }) => {
+    test.setTimeout(PYODIDE_BOOT_TIMEOUT + 30_000);
+    await page.goto('/');
+    await awaitPyodideOrSkip(page);
+
+    const bashBar = page
+      .locator('.lesson-code-block:has(code.language-bash) [data-lesson-code-actions]')
+      .locator('[data-lesson-code-active]');
+    // Idle: no marker.
+    await expect(bashBar).toHaveAttribute('data-lesson-code-active', 'false');
+
+    // Click Run: marker flips on.
+    await page.getByRole('button', { name: 'Run', exact: true }).click();
+    await expect(bashBar).toHaveAttribute('data-lesson-code-active', 'true');
+  });
 });
 
 test.describe('Load lesson files (#41)', () => {

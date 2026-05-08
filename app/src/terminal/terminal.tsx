@@ -4,7 +4,11 @@ import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { useTheme } from '@/theme/use-theme';
 import { LineEditor } from './line-editor';
-import { setTerminalSubmit, type TerminalSubmit } from './terminal-submit-store';
+import {
+  setTerminalRunning,
+  setTerminalSubmit,
+  type TerminalSubmit,
+} from './terminal-submit-store';
 
 const PROMPT = '$ ';
 
@@ -71,10 +75,12 @@ export function TerminalView({ onCommand }: Props) {
       // Run a command from any source (user typing or external Run
       // button). Uses the same busy gate as user-typed commands.
       busyRef.current = true;
+      setTerminalRunning(true);
       try {
         await onCommandRef.current(line, api);
       } finally {
         busyRef.current = false;
+        setTerminalRunning(false);
         term.write(`${PROMPT}`);
       }
     }
@@ -120,6 +126,7 @@ export function TerminalView({ onCommand }: Props) {
 
     return () => {
       setTerminalSubmit(null);
+      setTerminalRunning(false);
       ro.disconnect();
       onData.dispose();
       term.dispose();
