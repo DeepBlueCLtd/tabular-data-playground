@@ -50,11 +50,12 @@ export function LessonCodeBlock({ children, renderActions }: LessonCodeBlockProp
   const lang = codeChild ? languageFromClassName(codeChild.props.className) : '';
   const source = codeChild ? flattenChildren(codeChild.props.children) : '';
 
+  const actions = renderActions ? renderActions(lang, source) : null;
   return (
     <div className="lesson-code-block">
-      {renderActions ? (
+      {actions ? (
         <div className="lesson-code-actions" data-lesson-code-actions>
-          {renderActions(lang, source)}
+          {actions}
         </div>
       ) : null}
       <pre data-lesson-code-lang={lang || undefined}>{children}</pre>

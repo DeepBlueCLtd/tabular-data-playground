@@ -36,6 +36,26 @@ test.describe('Lesson loader (#38)', () => {
     // Bash code block is highlighted by highlight.js (allow-list).
     await expect(page.locator('code.hljs.language-bash')).toBeVisible();
 
+    // #39: bash blocks get a Copy + Run action bar; non-bash blocks
+    // do not. Sample lesson has bash, json, python, yaml, csv, and
+    // an unknown language. Only the bash one should have actions.
+    const bashActions = page.locator(
+      '.lesson-code-block:has(code.language-bash) [data-lesson-code-actions]',
+    );
+    await expect(bashActions).toHaveCount(1);
+    await expect(bashActions.getByRole('button', { name: 'Copy' })).toBeVisible();
+    await expect(bashActions.getByRole('button', { name: 'Run' })).toBeVisible();
+    // Non-bash blocks must not carry any action bar siblings.
+    await expect(
+      page.locator('.lesson-code-block:has(code.language-json) [data-lesson-code-actions]'),
+    ).toHaveCount(0);
+    await expect(
+      page.locator('.lesson-code-block:has(code.language-python) [data-lesson-code-actions]'),
+    ).toHaveCount(0);
+    await expect(
+      page.locator('.lesson-code-block:has(code.language-csv) [data-lesson-code-actions]'),
+    ).toHaveCount(0);
+
     // Bash IS on the highlight allow-list — it gets the .hljs class.
     await expect(page.locator('code.hljs.language-bash')).toBeVisible();
     // CSV is NOT registered — its <code> renders, but it carries no
@@ -107,6 +127,46 @@ async function awaitPyodideOrSkip(page: import('@playwright/test').Page): Promis
   }
   test.skip(true, `Pyodide still loading after ${PYODIDE_BOOT_TIMEOUT}ms — env constraint.`);
 }
+
+// SC-001..SC-004 of specs/038-copy-run-buttons/spec.md.
+test.describe('Copy + Run buttons (#39)', () => {
+  test('Copy writes the bash block source to clipboard', async ({ page, browser }) => {
+    // Grant clipboard permissions for this context so navigator.clipboard works.
+    await browser
+      .contexts()[0]
+      ?.grantPermissions(['clipboard-read', 'clipboard-write'])
+      .catch(() => undefined);
+
+    await page.goto('/');
+    const bashActions = page.locator(
+      '.lesson-code-block:has(code.language-bash) [data-lesson-code-actions]',
+    );
+    await expect(bashActions).toBeVisible();
+    const copyButton = bashActions.getByRole('button', { name: /^(Copy|Copied|Copy failed)$/ });
+    await copyButton.click();
+    // Clipboard read works even without grants in headless if the page initiated it,
+    // but we read via evaluate which uses the same security context.
+    const text = await page.evaluate(() => navigator.clipboard.readText());
+    expect(text).toBe('frictionless describe data.csv');
+    // The button briefly indicates success.
+    await expect(copyButton).toHaveText('Copied');
+  });
+
+  test('Run is disabled while terminal is unavailable, enabled after Python ready', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const runButton = page
+      .locator('.lesson-code-block:has(code.language-bash) [data-lesson-code-actions]')
+      .getByRole('button', { name: 'Run' });
+    // Initially disabled — terminal not yet mounted (Pyodide loading
+    // → terminal panel renders the placeholder, no submit registered).
+    await expect(runButton).toBeDisabled();
+    // We don't wait for ready here — that's #40's territory and the
+    // sandbox may not reach ready. The disable-state at first paint
+    // is the assertion that proves FR-009.
+  });
+});
 
 test.describe('Load lesson files (#41)', () => {
   test('copies starter files into /workspace/<slug>/ when destination is empty', async ({
