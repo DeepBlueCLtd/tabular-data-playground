@@ -38,7 +38,7 @@ description: "Task list — Load lesson files (#41)"
 - [X] T013 [P] Extend `app/e2e/lessons.spec.ts` with two new tests: (a) "Load lesson files: empty workspace" — clicks button, asserts `/workspace/_sample/data.csv` content via the existing terminal `cat` builtin or by re-reading via the file tree DOM. (b) "Load lesson files: overwrite confirm" — pre-write a tiny `data.csv`, click button, expect modal with the spec text, Cancel, verify content unchanged; click again, Overwrite, verify content matches starter.
 - [X] T014 [P] Update `docs/limitations.md` with two bullets: (a) **No rollback on partial copy failure** — if a write fails mid-batch, the workspace is left in a mixed state; user can delete and retry. (b) **"Any existing file" treated as user-edited** — Load lesson files asks before overwriting any path collision, even if the file content matches the starter. Both feed into #51.
 - [X] T015 Ran `pnpm typecheck && pnpm lint && pnpm format:check && pnpm build && CI=1 pnpm test:e2e`. Result: typecheck/lint/format/build green; e2e 5 passed + 2 skipped (#41 tests skip when Pyodide can't reach the CDN from the worker context — sandbox constraint documented in `docs/limitations.md`; deployed-site verification at epic close is the authoritative gate per spec.md §11).
-- [ ] T016 Update `backlog.md` row #41 → strikethrough + `complete`. Commit `docs: backlog status — #41 complete`.
+- [X] T016 Update `backlog.md` row #41 → strikethrough + `complete`. Commit `docs: backlog status — #41 complete`.
 
 ## Dependencies
 ```
