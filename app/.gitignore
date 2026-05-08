@@ -1,0 +1,11 @@
+# Build / dev artefacts for app/ (Vite + TypeScript + React 18 scaffold)
+node_modules/
+dist/
+.vite/
+*.log
+*.tsbuildinfo
+
+# npm lockfile is an install side-effect during verification; lockfile policy
+# is owned by item #5 (pnpm setup, committed pnpm-lock.yaml). Remove this entry
+# in #5 once pnpm-lock.yaml lands.
+package-lock.json
