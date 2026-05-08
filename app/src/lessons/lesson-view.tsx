@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { getLesson } from './load';
 import { LessonRenderer } from './lesson-renderer';
+import { LoadLessonFilesButton } from './load-files-action';
 
 export interface LessonViewProps {
   slug: string | null;
@@ -36,6 +37,7 @@ export function LessonView({ slug }: LessonViewProps) {
       <header className="lesson-view-header">
         <h1>{lesson.meta.title}</h1>
         <p className="lesson-view-meta">{lesson.meta.estimatedMinutes} min</p>
+        <LoadLessonFilesButton lesson={lesson} />
       </header>
       <LessonRenderer source={lesson.body} />
     </div>

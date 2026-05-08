@@ -12,7 +12,7 @@ test.describe('IDE shell smoke', () => {
 
     // Activity bar buttons.
     await expect(page.getByRole('button', { name: /lessons/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /files/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Files', exact: true })).toBeVisible();
 
     // Terminal panel header.
     await expect(page.getByRole('region', { name: /terminal/i })).toBeVisible();
@@ -35,7 +35,7 @@ test.describe('IDE shell smoke', () => {
 
   test('files panel shows file tree placeholder before runtime', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: /files/i }).click();
+    await page.getByRole('button', { name: 'Files', exact: true }).click();
     await expect(page.getByText(/Reset workspace/i)).toBeVisible();
   });
 });

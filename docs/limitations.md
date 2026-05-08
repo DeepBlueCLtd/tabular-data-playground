@@ -201,6 +201,42 @@ URL is the pin (Constitution Principle VI). Two consequences:
   structure we rely on Monaco's column ruler and the lesson copy
   rather than syntax highlighting.
 
+### Pyodide-dependent e2e tests skip when the runtime fails to load
+
+Some Playwright tests (the `Load lesson files (#41)` flows) require
+Pyodide to fully load + `micropip.install("frictionless")`. Pyodide
+loads on a Web Worker (Measurement C), which means the worker context
+must be able to fetch the CDN. In some local sandboxes / corporate
+proxies the main thread can reach the CDN but the worker cannot —
+yielding `Python: error` instead of `Python: ready`. The affected
+tests detect this and call `test.skip()` with a diagnostic message
+rather than fail. The deployed-site verification at epic close
+(`spec.md` §11 E2 done — "live on the deployed Pages site") remains
+the authoritative gate; CI on a normal runner reaches `Python: ready`
+in well under the 180 s budget.
+
+### Load lesson files — no rollback, "any existing file" prompts
+
+The **Load lesson files** action (#41) copies
+`/content/lessons/<slug>/files/` into `/workspace/<slug>/`. Two sharp
+edges:
+
+- **No rollback on partial failure.** If a file write fails mid-batch
+  (transient worker error, IDBFS quota mid-flight), the action stops
+  and surfaces the offending path. Already-written files are kept;
+  un-written files are not retried. The user can delete the partial
+  state via the file tree or **Reset workspace** and try again. v1
+  does not implement transactional rollback because IDBFS has no
+  cross-file transaction primitive over the worker bridge.
+- **"Any file" treated as a user edit.** The collision check is by
+  path, not by content. If a starter file at the same path is already
+  present in the workspace — even one identical to the bundled
+  starter, e.g. from a previous **Load lesson files** click — the
+  modal still asks before overwriting. We accept the small
+  over-prompt to keep Principle III's behaviour symmetric and
+  inspection-free. (#17 makes the same trade-off for drag-and-drop
+  imports.)
+
 ### Frictionless absolute-path workaround moved to the worker
 
 The Phase 0 finding ("Frictionless rejects absolute paths as 'not

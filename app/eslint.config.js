@@ -7,7 +7,17 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', '.vite', 'coverage', 'spikes'] },
+  {
+    ignores: [
+      'dist',
+      'node_modules',
+      '.vite',
+      'coverage',
+      'spikes',
+      'playwright-report',
+      'test-results',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

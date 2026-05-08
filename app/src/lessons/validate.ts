@@ -1,4 +1,6 @@
-import type { LessonMeta } from './types';
+import type { AuthoredLessonMeta } from './types';
+
+export type { AuthoredLessonMeta };
 
 const KNOWN_FIELDS: ReadonlySet<string> = new Set([
   'title',
@@ -6,13 +8,16 @@ const KNOWN_FIELDS: ReadonlySet<string> = new Set([
   'order',
   'summary',
   'estimatedMinutes',
+  // hasFiles is derived (#41), not authored — but tolerated if present so
+  // round-tripped meta objects don't trigger the warning.
+  'hasFiles',
 ]);
 
 function fail(metaPath: string, reason: string): never {
   throw new Error(`lesson loader: ${metaPath}: ${reason}`);
 }
 
-export function validateLessonMeta(folderName: string, raw: unknown): LessonMeta {
+export function validateLessonMeta(folderName: string, raw: unknown): AuthoredLessonMeta {
   const metaPath = `content/lessons/${folderName}/meta.json`;
 
   if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
@@ -53,10 +58,12 @@ export function validateLessonMeta(folderName: string, raw: unknown): LessonMeta
     }
   }
 
-  return m as LessonMeta;
+  return m as unknown as AuthoredLessonMeta;
 }
 
-export function checkUniqueness(metas: ReadonlyArray<{ folder: string; meta: LessonMeta }>): void {
+export function checkUniqueness(
+  metas: ReadonlyArray<{ folder: string; meta: AuthoredLessonMeta }>,
+): void {
   const seenSlugs = new Map<string, string>();
   const seenOrders = new Map<number, string>();
   for (const { folder, meta } of metas) {
