@@ -79,7 +79,7 @@ Strikethrough rows indicate completed work.
 | 31 | Feature | Cancellation — Ctrl+C and Cancel button via `worker.terminate()` (Pyodide is on a Web Worker per Measurement C #3 verdict, recorded in `docs/architecture.md`). (decision #47, `spec.md` §6.5). | 3 | 3 | 5 | 11 | Medium | proposed | E1 | 2026-05-08 | 2026-05-08 |
 | 32 | Feature | "Best on a wider screen" notice below ~900 px width; no responsive layout work (decision #6, `spec.md` §10 R8). | 1 | 1 | 5 | 7 | Low | proposed | E1 | 2026-05-08 | 2026-05-08 |
 | ~~33~~ | ~~Infrastructure~~ | ~~GitHub Actions CI — `pnpm build` and `pnpm test` on PR.~~ | ~~3~~ | ~~1~~ | ~~5~~ | ~~9~~ | ~~Low~~ | ~~complete~~ | ~~E1~~ | ~~2026-05-08~~ | 2026-05-08 |
-| 34 | Infrastructure | GitHub Pages deploy on push to `main`. | 3 | 3 | 5 | 11 | Low | proposed | E1 | 2026-05-08 | 2026-05-08 |
+| ~~34~~ | ~~Infrastructure~~ | ~~GitHub Pages deploy on push to `main`.~~ | ~~3~~ | ~~3~~ | ~~5~~ | ~~11~~ | ~~Low~~ | ~~complete~~ | ~~E1~~ | ~~2026-05-08~~ | 2026-05-08 |
 | 35 | Infrastructure | Playwright Chromium-only smoke test against the built site (decision #13). | 3 | 1 | 5 | 9 | Medium | proposed | E1 | 2026-05-08 | 2026-05-08 |
 | 36 | Feature | Landing page — first-visit "What is this? Who's it for?" gate with Start button into the IDE; `localStorage` flag suppresses on return; "What is this?" link in IDE chrome lets user revisit (decisions #18, #39, `spec.md` §2). | 3 | 3 | 5 | 11 | Low | proposed | E2 | 2026-05-08 | 2026-05-08 |
 | 37 | Feature | Curriculum index in lesson panel as default view (`spec.md` §2, §7). | 3 | 1 | 5 | 9 | Low | proposed | E2 | 2026-05-08 | 2026-05-08 |
