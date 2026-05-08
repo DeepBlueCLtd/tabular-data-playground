@@ -89,7 +89,8 @@ so an epic is the right batching unit when you want to make a visible
 jump rather than ship a single item.
 
 The epic loop below processes a slice of the backlog without losing the
-per-item gates.
+per-item gates. To trigger it, run **`/epic E<n>`** (e.g. `/epic E1`);
+the skill at `.claude/skills/epic/SKILL.md` orchestrates this loop.
 
 ## Before starting an epic
 
