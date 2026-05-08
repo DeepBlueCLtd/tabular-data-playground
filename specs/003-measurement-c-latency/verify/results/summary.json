@@ -1,0 +1,102 @@
+{
+  "results": {
+    "chromium": {
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.37 Safari/537.36",
+      "pyodide": {
+        "pinned_url": "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js",
+        "runtime_version": "0.27.7",
+        "pinned_version": "0.27.7"
+      },
+      "frictionless": {
+        "version": "5.19.0"
+      },
+      "setup": {
+        "pyodide_load_ms": 2157,
+        "micropip_install_ms": 3156
+      },
+      "cold": {
+        "duration_ms": 995
+      },
+      "warm": {
+        "durations_ms": [
+          73,
+          67,
+          62,
+          61,
+          62,
+          65,
+          62,
+          75,
+          70,
+          66
+        ],
+        "completed": 10,
+        "median_ms": 66,
+        "p95_ms": 75
+      },
+      "verdict": "MAIN-THREAD-OK",
+      "verdict_reason": "cold 995 ms < 3000 and warm median 66 ms < 250 — within budget",
+      "error": null,
+      "date": "2026-05-08",
+      "crossOriginIsolated": false,
+      "harness": {
+        "name": "chromium"
+      },
+      "console": [
+        "[log] Loading micropip, packaging",
+        "[log] Loaded micropip, packaging",
+        "[log] Loading Jinja2, MarkupSafe, Pygments, annotated-types, attrs, certifi, charset-normalizer, idna, jsonschema, jsonschema_specifications, pydantic, pydantic_core, pyrsistent, python-dateutil, pyyaml, referencing, requests, rpds-py, six, typing-extensions, urllib3",
+        "[log] Loaded Jinja2, MarkupSafe, Pygments, annotated-types, attrs, certifi, charset-normalizer, idna, jsonschema, jsonschema_specifications, pydantic, pydantic_core, pyrsistent, python-dateutil, pyyaml, referencing, requests, rpds-py, six, typing-extensions, urllib3"
+      ]
+    },
+    "firefox": {
+      "browser": "Mozilla/5.0 (X11; Linux x86_64; rv:142.0) Gecko/20100101 Firefox/142.0",
+      "pyodide": {
+        "pinned_url": "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js",
+        "runtime_version": "0.27.7",
+        "pinned_version": "0.27.7"
+      },
+      "frictionless": {
+        "version": "5.19.0"
+      },
+      "setup": {
+        "pyodide_load_ms": 8234,
+        "micropip_install_ms": 10781
+      },
+      "cold": {
+        "duration_ms": 3718
+      },
+      "warm": {
+        "durations_ms": [
+          325,
+          334,
+          327,
+          318,
+          329,
+          331,
+          334,
+          329,
+          326,
+          322
+        ],
+        "completed": 10,
+        "median_ms": 328,
+        "p95_ms": 334
+      },
+      "verdict": "WORKER-RECOMMENDED",
+      "verdict_reason": "cold 3718 ms vs limit 3000; warm median 328 ms vs limit 250 — at least one over",
+      "error": null,
+      "date": "2026-05-08",
+      "crossOriginIsolated": false,
+      "harness": {
+        "name": "firefox"
+      },
+      "console": [
+        "[log] Loading micropip, packaging",
+        "[log] Loaded micropip, packaging",
+        "[log] Loading Jinja2, MarkupSafe, Pygments, annotated-types, attrs, certifi, charset-normalizer, idna, jsonschema, jsonschema_specifications, pydantic, pydantic_core, pyrsistent, python-dateutil, pyyaml, referencing, requests, rpds-py, six, typing-extensions, urllib3",
+        "[log] Loaded Jinja2, MarkupSafe, Pygments, annotated-types, attrs, certifi, charset-normalizer, idna, jsonschema, jsonschema_specifications, pydantic, pydantic_core, pyrsistent, python-dateutil, pyyaml, referencing, requests, rpds-py, six, typing-extensions, urllib3"
+      ]
+    }
+  }
+}

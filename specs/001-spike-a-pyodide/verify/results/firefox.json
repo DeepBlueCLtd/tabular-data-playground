@@ -1,0 +1,49 @@
+{
+  "outcome": "PASS",
+  "bannerText": "PASS — total 30527 ms",
+  "pyodide_pinned_url": "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js",
+  "pyodide_runtime_version": "0.27.7",
+  "frictionless_version": "5.19.0",
+  "browser_ua": "Mozilla/5.0 (X11; Linux x86_64; rv:142.0) Gecko/20100101 Firefox/142.0",
+  "cross_origin_isolated": false,
+  "total_elapsed_label": "30527 ms",
+  "steps": [
+    {
+      "name": "pyodide_load",
+      "elapsed_ms": 8309,
+      "exit_code": 0,
+      "stdout_first": "Pyodide 0.27.7 loaded."
+    },
+    {
+      "name": "micropip_install_frictionless",
+      "elapsed_ms": 10412,
+      "exit_code": 0,
+      "stdout_first": "frictionless installed via micropip"
+    },
+    {
+      "name": "frictionless_version",
+      "elapsed_ms": 8038,
+      "exit_code": 0,
+      "stdout_first": "5.19.0"
+    },
+    {
+      "name": "frictionless_validate",
+      "elapsed_ms": 3768,
+      "exit_code": 0,
+      "stdout_first": "─────────────────────────────────── Dataset ────────────────────────────────────"
+    }
+  ],
+  "full_stdout": "\n— pyodide_load —\nPyodide 0.27.7 loaded.\n\n— micropip_install_frictionless —\nfrictionless installed via micropip\n\n— frictionless_version —\n5.19.0\n\n— frictionless_validate —\n─────────────────────────────────── Dataset ────────────────────────────────────\n                dataset                 \n┏━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━┓\n┃ name   ┃ type  ┃ path       ┃ status ┃\n┡━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━┩\n│ sample │ table │ sample.csv │ VALID  │\n└────────┴───────┴────────────┴────────┘\n",
+  "full_stderr": "",
+  "totalElapsedMs": 31039,
+  "harness": {
+    "name": "firefox",
+    "harnessElapsedMs": 31039
+  },
+  "console": [
+    "[log] Loading micropip, packaging",
+    "[log] Loaded micropip, packaging",
+    "[log] Loading Jinja2, MarkupSafe, Pygments, annotated-types, attrs, certifi, charset-normalizer, idna, jsonschema, jsonschema_specifications, pydantic, pydantic_core, pyrsistent, python-dateutil, pyyaml, referencing, requests, rpds-py, six, typing-extensions, urllib3",
+    "[log] Loaded Jinja2, MarkupSafe, Pygments, annotated-types, attrs, certifi, charset-normalizer, idna, jsonschema, jsonschema_specifications, pydantic, pydantic_core, pyrsistent, python-dateutil, pyyaml, referencing, requests, rpds-py, six, typing-extensions, urllib3"
+  ]
+}
