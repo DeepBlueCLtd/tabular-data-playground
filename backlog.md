@@ -52,7 +52,7 @@ Strikethrough rows indicate completed work.
 | ~~4~~ | ~~Infrastructure~~ | ~~Vite + TypeScript + React 18 project scaffold under `app/` per `spec.md` §9 repo structure.~~ | ~~3~~ | ~~1~~ | ~~5~~ | ~~9~~ | ~~Low~~ | ~~complete~~ | ~~E1~~ | ~~2026-05-08~~ | 2026-05-08 |
 | ~~5~~ | ~~Infrastructure~~ | ~~pnpm setup with committed lockfile; CI uses `--frozen-lockfile` (decision #17).~~ | ~~3~~ | ~~1~~ | ~~5~~ | ~~9~~ | ~~Low~~ | ~~complete~~ | ~~E1~~ | ~~2026-05-08~~ | 2026-05-08 |
 | ~~6~~ | ~~Infrastructure~~ | ~~ESLint + Prettier standard config wired into CI.~~ | ~~1~~ | ~~1~~ | ~~5~~ | ~~7~~ | ~~Low~~ | ~~complete~~ | ~~E1~~ | ~~2026-05-08~~ | 2026-05-08 |
-| 7 | Infrastructure | Tailwind CSS + shadcn/ui (Radix primitives owned in-repo) integration (decisions #7, #8). | 3 | 3 | 5 | 11 | Medium | proposed | E1 | 2026-05-08 | 2026-05-08 |
+| ~~7~~ | ~~Infrastructure~~ | ~~Tailwind CSS + shadcn/ui (Radix primitives owned in-repo) integration (decisions #7, #8).~~ | ~~3~~ | ~~3~~ | ~~5~~ | ~~11~~ | ~~Medium~~ | ~~complete~~ | ~~E1~~ | ~~2026-05-08~~ | 2026-05-08 |
 | 8 | Feature | App shell layout — collapsible left rail (Activity bar: Lesson panel, File tree), centre tabbed editor area, status bar, bottom terminal panel. No router; single SPA URL (decision #28). (`spec.md` §2, §3) | 5 | 3 | 5 | 13 | Medium | proposed | E1 | 2026-05-08 | 2026-05-08 |
 | 9 | Feature | Drag-to-split horizontal editor panes via `react-mosaic` or `dockview` (decision #29). | 3 | 3 | 3 | 9 | Medium | proposed | E1 | 2026-05-08 | 2026-05-08 |
 | 10 | Feature | Theme provider — light/dark toggle, persisted in localStorage, broadcast to Tailwind, Monaco, and xterm (decision #12). | 3 | 1 | 5 | 9 | Low | proposed | E1 | 2026-05-08 | 2026-05-08 |
