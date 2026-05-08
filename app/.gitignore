@@ -5,6 +5,8 @@ dist/
 *.log
 *.tsbuildinfo
 
-# Playwright (#35)
+# Playwright (#35) — screenshots are regenerated on every run; rely on
+# the playwright-report artefact uploaded by CI for diagnostics.
 playwright-report/
 test-results/
+e2e/screenshots/
