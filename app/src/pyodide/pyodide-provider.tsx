@@ -117,7 +117,11 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
   );
 
   const spawnWorker = useCallback(() => {
-    const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+    // Classic worker (no `type: 'module'`): module workers cannot call
+    // importScripts(), which is how Pyodide's UMD bundle is loaded
+    // inside the worker. Vite still bundles the TS source for classic
+    // workers; only the runtime module type changes.
+    const worker = new Worker(new URL('./worker.ts', import.meta.url));
     workerRef.current = worker;
     setVfs(null);
     setStatus('loading');
