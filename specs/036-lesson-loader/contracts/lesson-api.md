@@ -55,6 +55,21 @@ export function LessonCodeBlock(props: {
 }): JSX.Element;
 ```
 
+## Side-effect surface (for #39 / #40 / #41 integration)
+
+`LessonView` and `LessonRenderer` are **render-only**: they read from
+`getLessonIndex()` / `getLesson(slug)` and emit no DOM events, no global
+state writes, no FS writes, no analytics. Downstream items integrate
+through:
+
+- the `renderActions` prop on `LessonCodeBlock` (#39, #40), and
+- side-panel chrome around `LessonView` (#41 adds a "Load lesson files"
+  button outside this component, not inside).
+
+If you find yourself adding an event emitter to `LessonView` to satisfy a
+later item, that's a sign the integration belongs in the side-panel
+host, not in this loader.
+
 ## Stability
 
 - The four named functions/components and the three types above are the

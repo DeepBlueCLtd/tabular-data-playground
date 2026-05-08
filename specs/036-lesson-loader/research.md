@@ -58,6 +58,12 @@ graceful fallback. Use `rehype-highlight`'s `languages` option pointing
 at named `highlight.js/lib/languages/*` imports rather than the
 autoloader.
 
+**Allow-list discipline**: adding a language to the allow-list is a
+deliberate change to this spec, not an ad-hoc PR — bumping it requires
+updating spec FR-009 and this decision record together. The bundle-size
+trade-off is the reason; we want the language list to stay short and
+visible.
+
 **Rationale**:
 - The default `highlight.js` import auto-registers ~200 languages and
   bloats the bundle by ~600 KB minified. We need 4.

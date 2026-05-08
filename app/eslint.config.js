@@ -36,5 +36,24 @@ export default tseslint.config(
     files: ['vite.config.ts', 'eslint.config.js'],
     languageOptions: { globals: { ...globals.node } },
   },
+  // Lesson loader (#38) MUST stay independent of Pyodide so lesson
+  // bodies render even while Pyodide is still loading (spec FR-016).
+  {
+    files: ['src/lessons/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/pyodide/*', '@/pyodide'],
+              message:
+                'src/lessons/** must not depend on Pyodide — lesson rendering runs while Pyodide is still loading (#38 FR-016).',
+            },
+          ],
+        },
+      ],
+    },
+  },
   prettier,
 );

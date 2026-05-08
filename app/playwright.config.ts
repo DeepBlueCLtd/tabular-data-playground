@@ -30,7 +30,11 @@ export default defineConfig({
     // Pin vite preview to 127.0.0.1 so it always matches baseURL —
     // some CI runners default-bind to ::1 only and Playwright dials
     // 127.0.0.1, which manifests as ERR_CONNECTION_REFUSED.
-    command: `pnpm run build && pnpm exec vite preview --port ${PORT} --strictPort --host ${HOST}`,
+    // VITE_INCLUDE_DEV_LESSONS=1 makes the lesson loader (#38) include
+    // underscore-prefixed lessons (e.g. content/lessons/_sample) in
+    // the test build so e2e has something to render. Real `pnpm build`
+    // omits the env var and excludes them.
+    command: `VITE_INCLUDE_DEV_LESSONS=1 pnpm run build && pnpm exec vite preview --port ${PORT} --strictPort --host ${HOST}`,
     url: `http://${HOST}:${PORT}/`,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,

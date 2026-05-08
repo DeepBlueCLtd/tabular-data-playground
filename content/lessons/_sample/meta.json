@@ -1,0 +1,7 @@
+{
+  "title": "Sample lesson (dev only)",
+  "slug": "_sample",
+  "order": 0,
+  "summary": "Exercises every renderer feature so the lesson loader has something to render before the real curriculum lands.",
+  "estimatedMinutes": 1
+}
