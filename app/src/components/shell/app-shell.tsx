@@ -3,7 +3,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { ActivityBar, type ActivityEntry } from './activity-bar';
 import { SidePanel } from './side-panel';
-import { EditorAreaPlaceholder } from './editor-area-placeholder';
+import { EditorArea } from '@/editor/editor-area';
 import { TerminalPanel } from './terminal-panel';
 import { StatusBarPlaceholder } from './status-bar-placeholder';
 
@@ -40,7 +40,7 @@ export function AppShell() {
           <Panel defaultSize={78} minSize={40} order={2} id="main">
             <PanelGroup direction="vertical" autoSaveId="fde-shell-v" className="h-full">
               <Panel defaultSize={68} minSize={20} order={1} id="editor">
-                <EditorAreaPlaceholder />
+                <EditorArea />
               </Panel>
               <PanelResizeHandle className="h-px bg-border transition-colors hover:bg-ring" />
               <Panel defaultSize={32} minSize={10} order={2} id="terminal">

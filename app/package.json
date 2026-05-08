@@ -17,9 +17,11 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@monaco-editor/react": "4.6.0",
     "@radix-ui/react-slot": "1.1.1",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
+    "monaco-editor": "0.52.2",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-resizable-panels": "2.1.7",

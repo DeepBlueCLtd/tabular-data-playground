@@ -137,6 +137,23 @@ edges:
   drops to memory-only — files survive the session but not a
   reload. The facade does not detect or warn about this in v1.
 
+### Monaco loaded from jsdelivr CDN
+
+The editor (#13) uses `@monaco-editor/react`'s default loader,
+configured to fetch Monaco assets from
+`https://cdn.jsdelivr.net/npm/monaco-editor@<pinned>/min/vs`. The
+URL is the pin (Constitution Principle VI). Two consequences:
+
+- A jsdelivr outage prevents the editor from loading. There is no
+  bundled fallback in v1; the Suspense boundary surfaces a "Loading
+  editor…" indefinite state. A future bundled fallback would cost
+  ~3 MB on the main bundle, which is why we accept the CDN
+  dependency.
+- Monaco has no built-in CSV syntax mode. CSV files render as
+  plaintext in the editor (#13). For lessons that emphasise CSV
+  structure we rely on Monaco's column ruler and the lesson copy
+  rather than syntax highlighting.
+
 ### Frictionless absolute-path workaround moved to the worker
 
 The Phase 0 finding ("Frictionless rejects absolute paths as 'not
