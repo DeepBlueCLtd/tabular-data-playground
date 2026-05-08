@@ -1,5 +1,6 @@
 import { DragDropImporter } from '@/file-tree/drag-drop-importer';
 import { FileTree } from '@/file-tree/file-tree';
+import { ResetWorkspaceButton } from '@/file-tree/reset-workspace-button';
 import type { ActivityEntry } from './activity-bar';
 
 interface SidePanelProps {
@@ -17,9 +18,12 @@ export function SidePanel({ active }: SidePanelProps) {
           <p>Curriculum index lands here (#37). Lesson content via #38.</p>
         </div>
       ) : (
-        <DragDropImporter>
-          <FileTree />
-        </DragDropImporter>
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <DragDropImporter>
+            <FileTree />
+          </DragDropImporter>
+          <ResetWorkspaceButton />
+        </div>
       )}
     </aside>
   );
