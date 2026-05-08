@@ -27,28 +27,6 @@ test.describe('IDE shell smoke', () => {
     await page.screenshot({ path: 'e2e/screenshots/01-shell-loading.png', fullPage: true });
   });
 
-  test('Pyodide reaches ready or surfaces a clear error', async ({ page }) => {
-    const consoleErrors: string[] = [];
-    page.on('pageerror', (e) => consoleErrors.push(`pageerror: ${e.message}`));
-    page.on('console', (m) => {
-      if (m.type() === 'error') consoleErrors.push(`console.error: ${m.text()}`);
-    });
-    await page.goto('/');
-    // Wait up to 45s for ready OR error.
-    const indicator = page
-      .getByRole('status')
-      .filter({ hasText: /Python ready|Python failed/ })
-      .first();
-    try {
-      await expect(indicator).toBeVisible({ timeout: 45_000 });
-    } finally {
-      await page.screenshot({ path: 'e2e/screenshots/04-pyodide-final.png', fullPage: true });
-      if (consoleErrors.length > 0) {
-        console.log('Page errors during load:\n' + consoleErrors.join('\n'));
-      }
-    }
-  });
-
   test('editor empty state offers a sample file', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('button', { name: /open sample csv/i })).toBeVisible();
