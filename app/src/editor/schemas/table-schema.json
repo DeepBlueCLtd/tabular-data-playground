@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://specs.frictionlessdata.io/schemas/table-schema.json",
+  "title": "Table Schema (placeholder)",
+  "description": "Minimal placeholder bundled with the app. Runtime fetch from specs.frictionlessdata.io upgrades this when available.",
+  "type": "object",
+  "required": ["fields"],
+  "properties": {
+    "fields": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": [
+              "string",
+              "number",
+              "integer",
+              "boolean",
+              "object",
+              "array",
+              "date",
+              "time",
+              "datetime",
+              "year",
+              "yearmonth",
+              "duration",
+              "geopoint",
+              "geojson",
+              "any"
+            ]
+          },
+          "format": { "type": "string" },
+          "rdfType": { "type": "string", "format": "uri" },
+          "constraints": {
+            "type": "object",
+            "properties": {
+              "required": { "type": "boolean" },
+              "unique": { "type": "boolean" },
+              "minLength": { "type": "integer" },
+              "maxLength": { "type": "integer" },
+              "minimum": {},
+              "maximum": {},
+              "pattern": { "type": "string" },
+              "enum": { "type": "array" }
+            }
+          }
+        }
+      }
+    },
+    "primaryKey": {
+      "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+    },
+    "foreignKeys": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["fields", "reference"],
+        "properties": {
+          "fields": {
+            "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+          },
+          "reference": {
+            "type": "object",
+            "required": ["resource", "fields"],
+            "properties": {
+              "resource": { "type": "string" },
+              "fields": {
+                "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+              }
+            }
+          }
+        }
+      }
+    },
+    "missingValues": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

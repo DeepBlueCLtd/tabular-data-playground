@@ -116,6 +116,99 @@ Captured 2026-05-08 via headless Playwright. Findings:
   "no in-band cancellation if main-thread" caveat above (now
   obsolete; this doc will lose that line at E1 once #31 lands).
 
+## E1 findings
+
+### IDBFS is the persistence backbone — quota and private-mode caveats
+
+The Virtual FS facade (#11) mounts Pyodide IDBFS at `/workspace` and
+calls `FS.syncfs(false, ...)` after every mutating call. Two sharp
+edges:
+
+- **Browser quota.** IndexedDB has a per-origin quota (Chrome ~60% of
+  free disk, Firefox ~10 GB shared, Safari smaller). A workspace
+  full of large CSVs can exhaust this. The facade does not enforce
+  any cap; the drag-and-drop importer (#17) rejects single files >
+  10 MB but a large sequence of small files can still hit quota.
+  When quota is exceeded, `syncfs` rejects and the facade surfaces
+  the underlying error code (mapped to `EUNK` in v1).
+- **Private-browsing modes.** Some browsers (Safari historically,
+  Firefox in private mode) restrict or zero-out IndexedDB quota. In
+  those cases IDBFS still mounts but `syncfs(false)` silently
+  drops to memory-only — files survive the session but not a
+  reload. The facade does not detect or warn about this in v1.
+
+### Editor split is 2-pane horizontal only
+
+The editor split (#9) is a v1 simplification of the constitution's
+"drag-to-split horizontal panes via `react-mosaic` /
+`dockview`". Behaviour delivered:
+
+- One "Split editor" toggle button creates a second pane to the
+  right of the primary; "Close split" merges back.
+- Drag the vertical divider to resize.
+- Each pane has an independent active tab; both share the same
+  global tab list.
+
+Out of scope for v1: drag-to-split-from-empty, vertical splits,
+>2 panes, drag-tabs-between-panes. Documented in
+`specs/033-editor-split/plan.md` Complexity Tracking.
+
+### Drag-and-drop importer caps and quirks
+
+The drag-and-drop importer (#17) uses
+`DataTransferItem.webkitGetAsEntry()` to walk dropped folders.
+Sharp edges:
+
+- **10 MB per-file hard cap.** Files larger than 10,485,760 bytes
+  are rejected with a modal; the rest of the batch is also
+  rejected (we surface the first oversized file's name and bail
+  out for predictability).
+- **Symlinks are not represented** by the FileSystem entries API
+  in browsers. Dropping a symlinked folder follows the link
+  silently if the OS resolves it; otherwise the entry is missing.
+- **Large folders may stall the UI** while
+  `readEntries` paginates. v1 does not show a progress indicator;
+  drops over a few hundred files are out of scope for the
+  evaluation artefact.
+
+### Bundled JSON Schemas are placeholders
+
+JSON Schema validation in the editor (#14) ships minimal
+placeholder schemas at `app/src/editor/schemas/{data-package,
+table-dialect,table-schema}.json`. They catch obvious mistakes
+(missing required fields, wrong field type) but are NOT the
+canonical Frictionless specs. On editor mount, the app fetches
+the canonical schemas from `specs.frictionlessdata.io` with a 2 s
+timeout and replaces the bundle on success. If the fetch fails
+(offline, CORS, outage) users keep the placeholder validation —
+silent fallback. Update the placeholders when the canonical specs
+move.
+
+### Monaco loaded from jsdelivr CDN
+
+The editor (#13) uses `@monaco-editor/react`'s default loader,
+configured to fetch Monaco assets from
+`https://cdn.jsdelivr.net/npm/monaco-editor@<pinned>/min/vs`. The
+URL is the pin (Constitution Principle VI). Two consequences:
+
+- A jsdelivr outage prevents the editor from loading. There is no
+  bundled fallback in v1; the Suspense boundary surfaces a "Loading
+  editor…" indefinite state. A future bundled fallback would cost
+  ~3 MB on the main bundle, which is why we accept the CDN
+  dependency.
+- Monaco has no built-in CSV syntax mode. CSV files render as
+  plaintext in the editor (#13). For lessons that emphasise CSV
+  structure we rely on Monaco's column ruler and the lesson copy
+  rather than syntax highlighting.
+
+### Frictionless absolute-path workaround moved to the worker
+
+The Phase 0 finding ("Frictionless rejects absolute paths as 'not
+safe'") is handled at the worker level: after IDBFS mount, the
+worker `os.chdir('/workspace')` once, and the CLI wrapper in #28
+re-asserts that cwd before each invocation. Consumers can therefore
+pass workspace-relative paths to the bridge without translation.
+
 ## Cross-cutting (carried from `spec.md` §6.5 / §10)
 
 These will be enumerated as their owning features land in E1/E2 and

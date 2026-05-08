@@ -1,0 +1,10 @@
+# Build / dev artefacts for app/ (Vite + TypeScript + React 18 scaffold)
+node_modules/
+dist/
+.vite/
+*.log
+*.tsbuildinfo
+
+# Playwright (#35)
+playwright-report/
+test-results/
