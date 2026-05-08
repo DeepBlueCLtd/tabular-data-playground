@@ -66,7 +66,31 @@ the eventual app cannot work around.
 
 ### Spike B — Mini-shell pipes prototype
 
-**Status: PENDING.** See `backlog.md` item #2.
+PASSED in Chromium 141 and Firefox 142. Findings:
+
+- **xterm.js exposes no runtime version constant.** Pinning is
+  enforceable only via the CDN URL we choose. The spike page records
+  the URL and the version we wrote into `xterm.config.js`; the
+  bundle itself does not let JavaScript verify that what loaded
+  matches the pin. E1 will rely on the pnpm lockfile for this
+  guarantee instead.
+- **`Terminal.onData` does not deliver multi-character paste atomically
+  on all browsers.** The spike's interactive prompt iterates the
+  delivered string character by character to stay safe; that is
+  enough for typed input but the eventual E1 terminal (item #21)
+  must handle paste of multiline data without accidentally treating
+  internal `\r` as command boundaries inside quoted strings (defer
+  to E1 item #22 tokeniser).
+- **Rejected-feature list enforced at parse time** (per Constitution
+  Principle VII): `&&`, `||`, `;`, `&`, `(`, `)`, `$(`, `${`, `<`,
+  `>>`, `*`, `?`, `~`, `$VAR`, `${VAR}`, tab completion. Each
+  rejection produces a one-line message naming the operator.
+  Lessons (E2) will reference this list explicitly so learners
+  aren't surprised.
+- **Pipe buffer cap (1 MiB) is research-mode only.** The eventual
+  v1 cap and behaviour on overflow belongs to E1 item #24
+  (mini-shell executor). The spike rejects overflow with an explicit
+  error rather than silently truncating.
 
 ### Measurement C — Pyodide latency budget
 

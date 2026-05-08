@@ -89,8 +89,60 @@ CLI surfaces both work via the corrected entry-point
 
 ### Spike B — Mini-shell pipes prototype
 
-**Status: PENDING.** Implementation tracked under `backlog.md` item
-#2.
+**Status**: PASS in both Chromium and Firefox via headless Playwright
+on 2026-05-08. Self-check (four assertions) passes in both browsers.
+
+#### Chromium run
+
+**Browser**: Chromium 141 (Playwright headless on Linux)
+**Date**: 2026-05-08
+**Outcome**: **PASS**
+
+**Versions**:
+
+- xterm.js pinned URL: `https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.js`
+- xterm.js: `5.5.0`
+- `@xterm/addon-fit`: `0.10.0`
+
+| # | Name | Command | Passed | Details |
+|---|------|---------|--------|---------|
+| 1 | pipeline_redirect | `echo hello \| cat > out.txt` | ✓ | `out.txt = "hello\n"` (6 bytes in VFS) |
+| 2 | read_back | `cat out.txt` | ✓ | stdout = `"hello\n"` |
+| 3 | multistage_pipeline | `echo a \| cat \| cat` | ✓ | stdout = `"a\n"` |
+| 4 | rejected_feature | `echo a && echo b` | ✓ | parser rejected with `'&&' is not supported (see docs/limitations.md)` |
+
+#### Firefox run
+
+**Browser**: Firefox 142 (Playwright headless on Linux)
+**Date**: 2026-05-08
+**Outcome**: **PASS**
+
+Identical assertion outcomes to Chromium; identical pinned versions
+(xterm 5.5.0, addon-fit 0.10.0).
+
+#### Go / no-go
+
+**Go.** A vanilla-JS `tokenise → parse → execute` pipeline with
+`AsyncIterable<Uint8Array>` per stage and full-stage buffering
+delivers the spec's pass criterion (`echo hello | cat > out.txt`
+materialises `hello\n` in the virtual FS) on both target browsers.
+The rejected-features list (`&&`, `||`, `;`, `$VAR`, `>>`, etc.)
+is enforced at parse time with one-line messages naming the
+rejected operator. E1 mini-shell items (#21–#26) may proceed.
+
+#### Findings
+
+1. **xterm.js does not export a runtime version constant** —
+   `window.Terminal` is the only global; `Terminal.version` is not
+   defined. The pin is therefore reliable only via the URL itself.
+   The Versions block on the spike page records the URL; the
+   resolved version inside the bundle is unobservable without
+   reading `package.json` from the CDN. Documented in
+   `docs/limitations.md`.
+2. **No SharedArrayBuffer / no Worker required**: the buffered-pipe
+   model deliberately avoids both, so this spike's success on a
+   non-isolated origin (GitHub Pages) is not coincidental — it's a
+   property of the chosen architecture.
 
 ### Measurement C — Pyodide latency budget
 

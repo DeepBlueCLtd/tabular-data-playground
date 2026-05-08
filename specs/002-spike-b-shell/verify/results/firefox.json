@@ -1,0 +1,57 @@
+{
+  "outcome": "PASS",
+  "bannerText": "PASS — total 217 ms",
+  "results": [
+    {
+      "name": "A1",
+      "command": "echo hello | cat > out.txt",
+      "passed": true,
+      "details": "out.txt = \"hello\\n\" (6 bytes)"
+    },
+    {
+      "name": "A2",
+      "command": "cat out.txt",
+      "passed": true,
+      "details": "stdout = \"hello\\n\""
+    },
+    {
+      "name": "A3",
+      "command": "echo a | cat | cat",
+      "passed": true,
+      "details": "stdout = \"a\\n\""
+    },
+    {
+      "name": "A4",
+      "command": "echo a && echo b",
+      "passed": true,
+      "details": "'&&' is not supported (see docs/limitations.md)"
+    }
+  ],
+  "vfsKeys": [
+    "/workspace/out.txt"
+  ],
+  "selfCheckTranscript": [
+    "$ echo hello | cat > out.txt",
+    "$ cat out.txt",
+    "hello",
+    "$ echo a | cat | cat",
+    "a",
+    "$ echo a && echo b"
+  ],
+  "pinned": {
+    "xterm": {
+      "url": "https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.js",
+      "version": "5.5.0"
+    },
+    "fit": {
+      "version": "0.10.0"
+    }
+  },
+  "browser_ua": "Mozilla/5.0 (X11; Linux x86_64; rv:142.0) Gecko/20100101 Firefox/142.0",
+  "total_elapsed_label": "217 ms",
+  "totalElapsedMs": 570,
+  "harness": {
+    "name": "firefox"
+  },
+  "console": []
+}
