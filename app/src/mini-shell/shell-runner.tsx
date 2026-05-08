@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react';
+import { useEditorTabs } from '@/editor/use-editor-tabs';
 import { useVfs } from '@/fs/use-vfs';
 import { usePyodide } from '@/pyodide/use-pyodide';
 import type { TerminalApi } from '@/terminal/terminal';
@@ -14,6 +15,7 @@ import { tokenise, TokeniseError } from './tokenise';
 export function useShellRunner() {
   const { vfs } = useVfs();
   const { run } = usePyodide();
+  const { flushAll } = useEditorTabs();
   const cwdRef = useRef<string>(SHELL_HOME);
 
   const runLine = useCallback(
@@ -39,6 +41,13 @@ export function useShellRunner() {
         else throw e;
         return;
       }
+      // Pre-execution flush: ensure pending editor autosaves land
+      // before the shell dispatches (#26 — editor↔terminal race).
+      try {
+        await flushAll();
+      } catch (e) {
+        api.print(`shell: editor flush failed: ${e instanceof Error ? e.message : String(e)}\n`);
+      }
       try {
         const { cwdAfter } = await executePipeline(pipeline, {
           vfs,
@@ -53,7 +62,7 @@ export function useShellRunner() {
         api.print(`shell: ${msg}\n`);
       }
     },
-    [vfs, run],
+    [vfs, run, flushAll],
   );
 
   return { runLine };
