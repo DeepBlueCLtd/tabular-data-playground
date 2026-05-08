@@ -6,6 +6,7 @@ import { SidePanel } from './side-panel';
 import { EditorArea } from '@/editor/editor-area';
 import { TerminalPanel } from './terminal-panel';
 import { StatusBar } from './status-bar';
+import { WiderScreenNotice } from './wider-screen-notice';
 
 export function AppShell() {
   const [active, setActive] = useState<ActivityEntry>('lessons');
@@ -22,6 +23,7 @@ export function AppShell() {
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background text-foreground">
+      <WiderScreenNotice />
       <header className="flex items-center justify-between border-b border-border px-4 py-2">
         <span className="text-sm font-medium">Frictionless Data Explorer</span>
         <ThemeToggle />
