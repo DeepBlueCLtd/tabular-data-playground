@@ -4,7 +4,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { ActivityBar, type ActivityEntry } from './activity-bar';
 import { SidePanel } from './side-panel';
 import { EditorAreaPlaceholder } from './editor-area-placeholder';
-import { TerminalPanelPlaceholder } from './terminal-panel-placeholder';
+import { TerminalPanel } from './terminal-panel';
 import { StatusBarPlaceholder } from './status-bar-placeholder';
 
 export function AppShell() {
@@ -44,7 +44,7 @@ export function AppShell() {
               </Panel>
               <PanelResizeHandle className="h-px bg-border transition-colors hover:bg-ring" />
               <Panel defaultSize={32} minSize={10} order={2} id="terminal">
-                <TerminalPanelPlaceholder />
+                <TerminalPanel />
               </Panel>
             </PanelGroup>
           </Panel>
