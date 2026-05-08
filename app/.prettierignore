@@ -1,0 +1,8 @@
+node_modules
+dist
+.vite
+coverage
+pnpm-lock.yaml
+
+# E0 spike reference material — not part of v1 app scope (#4 spec.md §9)
+spikes
