@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Spike A — Pyodide + Frictionless install proof</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --fg: #1a1a1a;
+    --bg: #fafafa;
+    --muted: #666;
+    --rule: #ddd;
+    --pass: #1a7a3a;
+    --fail: #b32020;
+    --pending: #8a6d00;
+    --code-bg: #f0f0f0;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+    max-width: 960px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    line-height: 1.5;
+  }
+  h1 { margin-bottom: 0.25rem; }
+  .sub { color: var(--muted); margin-top: 0; }
+  button {
+    font: inherit;
+    padding: 0.4rem 0.9rem;
+    border: 1px solid var(--fg);
+    background: white;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  #banner {
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+    border-left: 4px solid var(--rule);
+    font-weight: bold;
+  }
+  #banner[data-state="idle"]    { color: var(--muted); }
+  #banner[data-state="running"] { border-color: var(--pending); color: var(--pending); }
+  #banner[data-state="pass"]    { border-color: var(--pass);    color: var(--pass);    background: #e8f5ec; }
+  #banner[data-state="fail"]    { border-color: var(--fail);    color: var(--fail);    background: #fbecec; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+  th, td {
+    border-bottom: 1px solid var(--rule);
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    vertical-align: top;
+    font-size: 0.95rem;
+  }
+  th { background: #f0f0f0; }
+  td.num { font-variant-numeric: tabular-nums; text-align: right; }
+  td.exit-ok   { color: var(--pass); }
+  td.exit-fail { color: var(--fail); }
+  pre {
+    background: var(--code-bg);
+    padding: 0.5rem 0.75rem;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.85rem;
+    margin: 0.25rem 0;
+    max-height: 240px;
+  }
+  .panes { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .panes h3 { margin: 0 0 0.25rem 0; font-size: 0.95rem; color: var(--muted); }
+  .meta { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem; font-size: 0.9rem; }
+  .meta dt { color: var(--muted); }
+  .meta dd { margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .controls { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+  textarea {
+    width: 100%;
+    min-height: 3em;
+    font: inherit;
+    padding: 0.4rem;
+    border: 1px solid var(--rule);
+    box-sizing: border-box;
+  }
+  details { margin-top: 1rem; }
+  summary { cursor: pointer; color: var(--muted); }
+</style>
+</head>
+<body>
+  <h1>Spike A — Pyodide + Frictionless install proof</h1>
+  <p class="sub">Phase 0 de-risking spike for the Frictionless Data Explorer. See <code>specs/001-spike-a-pyodide/</code>.</p>
+
+  <div class="controls">
+    <button id="run-btn" type="button">Run</button>
+    <button id="copy-btn" type="button" disabled>Copy results</button>
+    <span id="status" aria-live="polite">Idle.</span>
+  </div>
+
+  <div id="banner" data-state="idle">Idle — click Run to start.</div>
+
+  <h2>Versions</h2>
+  <dl class="meta">
+    <dt>Pyodide pinned URL</dt>     <dd id="meta-pyodide-url">—</dd>
+    <dt>Pyodide runtime version</dt><dd id="meta-pyodide-version">—</dd>
+    <dt>Frictionless</dt>           <dd id="meta-frictionless-version">—</dd>
+    <dt>Browser</dt>                <dd id="meta-browser">—</dd>
+    <dt>Cross-origin isolated</dt>  <dd id="meta-coi">—</dd>
+    <dt>Total elapsed</dt>          <dd id="meta-total">—</dd>
+  </dl>
+
+  <h2>Steps</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Step</th><th class="num">Elapsed (ms)</th><th>Exit</th><th>Stdout (first line)</th></tr>
+    </thead>
+    <tbody id="step-rows">
+      <tr data-step="pyodide_load">
+        <td>1</td><td>pyodide_load</td><td class="num" data-cell="elapsed">—</td><td data-cell="exit">—</td><td data-cell="stdout-first">—</td>
+      </tr>
+      <tr data-step="micropip_install_frictionless">
+        <td>2</td><td>micropip_install_frictionless</td><td class="num" data-cell="elapsed">—</td><td data-cell="exit">—</td><td data-cell="stdout-first">—</td>
+      </tr>
+      <tr data-step="frictionless_version">
+        <td>3</td><td>frictionless_version</td><td class="num" data-cell="elapsed">—</td><td data-cell="exit">—</td><td data-cell="stdout-first">—</td>
+      </tr>
+      <tr data-step="frictionless_validate">
+        <td>4</td><td>frictionless_validate</td><td class="num" data-cell="elapsed">—</td><td data-cell="exit">—</td><td data-cell="stdout-first">—</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <details open>
+    <summary>Captured streams (most recent run)</summary>
+    <div class="panes">
+      <div>
+        <h3>stdout</h3>
+        <pre id="full-stdout">—</pre>
+      </div>
+      <div>
+        <h3>stderr</h3>
+        <pre id="full-stderr">—</pre>
+      </div>
+    </div>
+  </details>
+
+  <h2>Notes (for the run record)</h2>
+  <p class="sub">Edit before clicking <em>Copy results</em>; the text below is included in the copied markdown block.</p>
+  <textarea id="notes" rows="3" placeholder="e.g. crossOriginIsolated === false; no impact on this run"></textarea>
+
+  <details>
+    <summary>About this page</summary>
+    <p>
+      This page is a research spike (Constitution Principle I). It loads
+      Pyodide from a pinned CDN URL, installs <code>frictionless</code> via
+      <code>micropip</code>, and runs <code>frictionless --version</code> and
+      <code>frictionless validate sample.csv</code>. PASS / FAIL is decided
+      from the captured exit codes and stdout per
+      <code>specs/001-spike-a-pyodide/data-model.md</code>.
+    </p>
+    <p>
+      No backend, no telemetry. The only network calls are to the pinned
+      Pyodide CDN and the wheels <code>micropip</code> resolves for
+      <code>frictionless</code>.
+    </p>
+  </details>
+
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
