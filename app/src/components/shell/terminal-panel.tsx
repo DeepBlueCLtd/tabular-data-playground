@@ -2,7 +2,7 @@ import { PyodideLoadingIndicator } from '@/pyodide/pyodide-loading-indicator';
 import { usePyodide } from '@/pyodide/use-pyodide';
 
 export function TerminalPanel() {
-  const { status } = usePyodide();
+  const { status, running, cancel } = usePyodide();
   const ready = status === 'ready';
 
   return (
@@ -14,7 +14,19 @@ export function TerminalPanel() {
         <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           Terminal
         </span>
-        <PyodideLoadingIndicator />
+        <div className="flex items-center gap-3">
+          {running && (
+            <button
+              type="button"
+              onClick={cancel}
+              className="rounded border border-border bg-muted/40 px-2 py-0.5 text-xs hover:bg-muted"
+              aria-label="Cancel running command"
+            >
+              Cancel
+            </button>
+          )}
+          <PyodideLoadingIndicator />
+        </div>
       </div>
       <div className="flex flex-1 flex-col p-3 font-mono text-xs">
         {ready ? (

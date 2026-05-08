@@ -33,6 +33,10 @@ export interface PyodideContextValue {
   vfs: Vfs | null;
   /** Pub-sub bus for fs-changed events fanned out from the worker. */
   fsEvents: FsEventBus;
+  /** True while at least one run / runPython call is in-flight. */
+  running: boolean;
+  /** Terminate the worker, reject pending calls, and re-init Pyodide. */
+  cancel: () => void;
 }
 
 export const PyodideContext = createContext<PyodideContextValue | null>(null);

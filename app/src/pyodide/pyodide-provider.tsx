@@ -28,6 +28,7 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
   const [pyodideVersion, setPyodideVersion] = useState<string | null>(null);
   const [frictionlessVersion, setFrictionlessVersion] = useState<string | null>(null);
   const [vfs, setVfs] = useState<Vfs | null>(null);
+  const [running, setRunning] = useState(false);
 
   const workerRef = useRef<Worker | null>(null);
   const startedRef = useRef(false);
@@ -35,6 +36,7 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
   const inflightRef = useRef<Promise<unknown>>(Promise.resolve());
   const statusRef = useRef<PyodideStatus>('idle');
   const fsEventsRef = useRef(new FsEventBus());
+  const runningCountRef = useRef(0);
 
   useEffect(() => {
     statusRef.current = status;
@@ -46,15 +48,13 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
     return next;
   }, []);
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      if (startedRef.current) return;
-      startedRef.current = true;
+  const bumpRunning = useCallback((delta: number) => {
+    runningCountRef.current = Math.max(0, runningCountRef.current + delta);
+    setRunning(runningCountRef.current > 0);
+  }, []);
 
-      const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
-      workerRef.current = worker;
-
-      // Build the vfs against this worker; expose it only once ready.
+  const attachWorkerListeners = useCallback(
+    (worker: Worker) => {
       const builtVfs = createVfs({ worker, schedule });
 
       worker.addEventListener('message', (event: MessageEvent<WorkerOutbound>) => {
@@ -63,16 +63,19 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
           setStatus('ready');
           setPyodideVersion(msg.pyodideVersion);
           setFrictionlessVersion(msg.frictionlessVersion);
+          setError(null);
           setVfs(builtVfs);
         } else if (msg.type === 'error') {
           setStatus('error');
           setError(new Error(`[${msg.stage}] ${msg.message}`));
           worker.terminate();
-          workerRef.current = null;
+          if (workerRef.current === worker) workerRef.current = null;
           for (const p of pendingRef.current.values()) {
             p.reject(new Error(`[${msg.stage}] ${msg.message}`));
           }
           pendingRef.current.clear();
+          runningCountRef.current = 0;
+          setRunning(false);
         } else if (msg.type === 'run-result') {
           const p = pendingRef.current.get(msg.id);
           if (p && p.kind === 'run') {
@@ -101,25 +104,57 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
         setStatus('error');
         setError(new Error(event.message || 'Pyodide worker crashed.'));
         worker.terminate();
-        workerRef.current = null;
+        if (workerRef.current === worker) workerRef.current = null;
         for (const p of pendingRef.current.values()) {
           p.reject(new Error(event.message || 'Pyodide worker crashed.'));
         }
         pendingRef.current.clear();
+        runningCountRef.current = 0;
+        setRunning(false);
       });
+    },
+    [schedule],
+  );
 
-      setStatus('loading');
-      worker.postMessage({ type: 'load' });
+  const spawnWorker = useCallback(() => {
+    const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+    workerRef.current = worker;
+    setVfs(null);
+    setStatus('loading');
+    attachWorkerListeners(worker);
+    worker.postMessage({ type: 'load' });
+  }, [attachWorkerListeners]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (startedRef.current) return;
+      startedRef.current = true;
+      spawnWorker();
     }, 0);
 
     return () => {
       window.clearTimeout(timer);
     };
-  }, [schedule]);
+  }, [spawnWorker]);
+
+  const cancel = useCallback(() => {
+    const worker = workerRef.current;
+    if (!worker) return;
+    // Reject all pending bridge calls before tearing down.
+    for (const p of pendingRef.current.values()) {
+      p.reject(new Error('Cancelled'));
+    }
+    pendingRef.current.clear();
+    runningCountRef.current = 0;
+    setRunning(false);
+    worker.terminate();
+    workerRef.current = null;
+    spawnWorker();
+  }, [spawnWorker]);
 
   const run = useCallback(
-    (args: string[], stdin?: string): Promise<RunResult> =>
-      schedule(
+    (args: string[], stdin?: string): Promise<RunResult> => {
+      const promise = schedule(
         () =>
           new Promise<RunResult>((resolve, reject) => {
             const worker = workerRef.current;
@@ -128,6 +163,7 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
               return;
             }
             const id = newId();
+            bumpRunning(1);
             pendingRef.current.set(id, {
               kind: 'run',
               resolve: resolve as (v: RunResult | RunPythonResult) => void,
@@ -135,13 +171,17 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
             });
             worker.postMessage({ type: 'run', id, args, stdin });
           }),
-      ),
-    [schedule],
+      );
+      const finalize = () => bumpRunning(-1);
+      promise.then(finalize, finalize);
+      return promise;
+    },
+    [schedule, bumpRunning],
   );
 
   const runPython = useCallback(
-    (code: string): Promise<RunPythonResult> =>
-      schedule(
+    (code: string): Promise<RunPythonResult> => {
+      const promise = schedule(
         () =>
           new Promise<RunPythonResult>((resolve, reject) => {
             const worker = workerRef.current;
@@ -150,6 +190,7 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
               return;
             }
             const id = newId();
+            bumpRunning(1);
             pendingRef.current.set(id, {
               kind: 'run-python',
               resolve: resolve as (v: RunResult | RunPythonResult) => void,
@@ -157,22 +198,32 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
             });
             worker.postMessage({ type: 'run-python', id, code });
           }),
-      ),
-    [schedule],
+      );
+      const finalize = () => bumpRunning(-1);
+      promise.then(finalize, finalize);
+      return promise;
+    },
+    [schedule, bumpRunning],
   );
 
   const reload = useCallback(() => {
-    // #30 will implement; v1 stub keeps the public API stable.
-  }, []);
+    // #30 will surface a UI button; mechanism re-uses cancel().
+    cancel();
+  }, [cancel]);
 
   // Dev-only smoke surface. Stripped from production by Vite.
   useEffect(() => {
     if (!import.meta.env.DEV) return;
-    (globalThis as unknown as { __pyodide?: unknown }).__pyodide = { run, runPython, vfs };
+    (globalThis as unknown as { __pyodide?: unknown }).__pyodide = {
+      run,
+      runPython,
+      vfs,
+      cancel,
+    };
     return () => {
       delete (globalThis as unknown as { __pyodide?: unknown }).__pyodide;
     };
-  }, [run, runPython, vfs]);
+  }, [run, runPython, vfs, cancel]);
 
   const value = useMemo(
     () => ({
@@ -185,8 +236,21 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
       runPython,
       vfs,
       fsEvents: fsEventsRef.current,
+      running,
+      cancel,
     }),
-    [status, error, pyodideVersion, frictionlessVersion, reload, run, runPython, vfs],
+    [
+      status,
+      error,
+      pyodideVersion,
+      frictionlessVersion,
+      reload,
+      run,
+      runPython,
+      vfs,
+      running,
+      cancel,
+    ],
   );
 
   return <PyodideContext.Provider value={value}>{children}</PyodideContext.Provider>;
