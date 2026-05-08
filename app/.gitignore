@@ -4,3 +4,7 @@ dist/
 .vite/
 *.log
 *.tsbuildinfo
+
+# Playwright (#35)
+playwright-report/
+test-results/
