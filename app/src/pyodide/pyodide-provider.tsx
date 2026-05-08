@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createVfs, type Vfs } from '@/fs/vfs';
 import {
   PyodideContext,
   type PyodideStatus,
@@ -25,6 +26,7 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<Error | null>(null);
   const [pyodideVersion, setPyodideVersion] = useState<string | null>(null);
   const [frictionlessVersion, setFrictionlessVersion] = useState<string | null>(null);
+  const [vfs, setVfs] = useState<Vfs | null>(null);
 
   const workerRef = useRef<Worker | null>(null);
   const startedRef = useRef(false);
@@ -36,6 +38,12 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
     statusRef.current = status;
   }, [status]);
 
+  const schedule = useCallback(<T,>(fn: () => Promise<T>): Promise<T> => {
+    const next = inflightRef.current.then(() => fn());
+    inflightRef.current = next.catch(() => undefined);
+    return next;
+  }, []);
+
   useEffect(() => {
     const timer = window.setTimeout(() => {
       if (startedRef.current) return;
@@ -44,18 +52,21 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
       const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
       workerRef.current = worker;
 
+      // Build the vfs against this worker; expose it only once ready.
+      const builtVfs = createVfs({ worker, schedule });
+
       worker.addEventListener('message', (event: MessageEvent<WorkerOutbound>) => {
         const msg = event.data;
         if (msg.type === 'ready') {
           setStatus('ready');
           setPyodideVersion(msg.pyodideVersion);
           setFrictionlessVersion(msg.frictionlessVersion);
+          setVfs(builtVfs);
         } else if (msg.type === 'error') {
           setStatus('error');
           setError(new Error(`[${msg.stage}] ${msg.message}`));
           worker.terminate();
           workerRef.current = null;
-          // Reject any pending bridge calls.
           for (const p of pendingRef.current.values()) {
             p.reject(new Error(`[${msg.stage}] ${msg.message}`));
           }
@@ -79,7 +90,8 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
             });
           }
         }
-        // 'fs-changed' is shaped here for #11/#12 — ignored for now.
+        // 'fs-result' is consumed by createVfs's own listener.
+        // 'fs-changed' fan-out lands in #12.
       });
 
       worker.addEventListener('error', (event) => {
@@ -100,51 +112,51 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
     return () => {
       window.clearTimeout(timer);
     };
-  }, []);
+  }, [schedule]);
 
-  const run = useCallback((args: string[], stdin?: string): Promise<RunResult> => {
-    const next = inflightRef.current.then(
-      () =>
-        new Promise<RunResult>((resolve, reject) => {
-          const worker = workerRef.current;
-          if (!worker || statusRef.current !== 'ready') {
-            reject(new Error('Pyodide not ready'));
-            return;
-          }
-          const id = newId();
-          pendingRef.current.set(id, {
-            kind: 'run',
-            resolve: resolve as (v: RunResult | RunPythonResult) => void,
-            reject,
-          });
-          worker.postMessage({ type: 'run', id, args, stdin });
-        }),
-    );
-    inflightRef.current = next.catch(() => undefined);
-    return next;
-  }, []);
+  const run = useCallback(
+    (args: string[], stdin?: string): Promise<RunResult> =>
+      schedule(
+        () =>
+          new Promise<RunResult>((resolve, reject) => {
+            const worker = workerRef.current;
+            if (!worker || statusRef.current !== 'ready') {
+              reject(new Error('Pyodide not ready'));
+              return;
+            }
+            const id = newId();
+            pendingRef.current.set(id, {
+              kind: 'run',
+              resolve: resolve as (v: RunResult | RunPythonResult) => void,
+              reject,
+            });
+            worker.postMessage({ type: 'run', id, args, stdin });
+          }),
+      ),
+    [schedule],
+  );
 
-  const runPython = useCallback((code: string): Promise<RunPythonResult> => {
-    const next = inflightRef.current.then(
-      () =>
-        new Promise<RunPythonResult>((resolve, reject) => {
-          const worker = workerRef.current;
-          if (!worker || statusRef.current !== 'ready') {
-            reject(new Error('Pyodide not ready'));
-            return;
-          }
-          const id = newId();
-          pendingRef.current.set(id, {
-            kind: 'run-python',
-            resolve: resolve as (v: RunResult | RunPythonResult) => void,
-            reject,
-          });
-          worker.postMessage({ type: 'run-python', id, code });
-        }),
-    );
-    inflightRef.current = next.catch(() => undefined);
-    return next;
-  }, []);
+  const runPython = useCallback(
+    (code: string): Promise<RunPythonResult> =>
+      schedule(
+        () =>
+          new Promise<RunPythonResult>((resolve, reject) => {
+            const worker = workerRef.current;
+            if (!worker || statusRef.current !== 'ready') {
+              reject(new Error('Pyodide not ready'));
+              return;
+            }
+            const id = newId();
+            pendingRef.current.set(id, {
+              kind: 'run-python',
+              resolve: resolve as (v: RunResult | RunPythonResult) => void,
+              reject,
+            });
+            worker.postMessage({ type: 'run-python', id, code });
+          }),
+      ),
+    [schedule],
+  );
 
   const reload = useCallback(() => {
     // #30 will implement; v1 stub keeps the public API stable.
@@ -153,11 +165,11 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
   // Dev-only smoke surface. Stripped from production by Vite.
   useEffect(() => {
     if (!import.meta.env.DEV) return;
-    (globalThis as unknown as { __pyodide?: unknown }).__pyodide = { run, runPython };
+    (globalThis as unknown as { __pyodide?: unknown }).__pyodide = { run, runPython, vfs };
     return () => {
       delete (globalThis as unknown as { __pyodide?: unknown }).__pyodide;
     };
-  }, [run, runPython]);
+  }, [run, runPython, vfs]);
 
   const value = useMemo(
     () => ({
@@ -168,8 +180,9 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
       reload,
       run,
       runPython,
+      vfs,
     }),
-    [status, error, pyodideVersion, frictionlessVersion, reload, run, runPython],
+    [status, error, pyodideVersion, frictionlessVersion, reload, run, runPython, vfs],
   );
 
   return <PyodideContext.Provider value={value}>{children}</PyodideContext.Provider>;

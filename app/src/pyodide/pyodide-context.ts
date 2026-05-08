@@ -1,4 +1,5 @@
 import { createContext } from 'react';
+import type { Vfs } from '@/fs/vfs';
 
 export type PyodideStatus = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -27,6 +28,8 @@ export interface PyodideContextValue {
   run: (args: string[], stdin?: string) => Promise<RunResult>;
   /** Escape hatch — evaluate raw Python. Rejects before ready. */
   runPython: (code: string) => Promise<RunPythonResult>;
+  /** Virtual FS over the worker's IDBFS. Null until status === 'ready'. */
+  vfs: Vfs | null;
 }
 
 export const PyodideContext = createContext<PyodideContextValue | null>(null);

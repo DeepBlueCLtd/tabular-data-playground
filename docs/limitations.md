@@ -116,6 +116,35 @@ Captured 2026-05-08 via headless Playwright. Findings:
   "no in-band cancellation if main-thread" caveat above (now
   obsolete; this doc will lose that line at E1 once #31 lands).
 
+## E1 findings
+
+### IDBFS is the persistence backbone — quota and private-mode caveats
+
+The Virtual FS facade (#11) mounts Pyodide IDBFS at `/workspace` and
+calls `FS.syncfs(false, ...)` after every mutating call. Two sharp
+edges:
+
+- **Browser quota.** IndexedDB has a per-origin quota (Chrome ~60% of
+  free disk, Firefox ~10 GB shared, Safari smaller). A workspace
+  full of large CSVs can exhaust this. The facade does not enforce
+  any cap; the drag-and-drop importer (#17) rejects single files >
+  10 MB but a large sequence of small files can still hit quota.
+  When quota is exceeded, `syncfs` rejects and the facade surfaces
+  the underlying error code (mapped to `EUNK` in v1).
+- **Private-browsing modes.** Some browsers (Safari historically,
+  Firefox in private mode) restrict or zero-out IndexedDB quota. In
+  those cases IDBFS still mounts but `syncfs(false)` silently
+  drops to memory-only — files survive the session but not a
+  reload. The facade does not detect or warn about this in v1.
+
+### Frictionless absolute-path workaround moved to the worker
+
+The Phase 0 finding ("Frictionless rejects absolute paths as 'not
+safe'") is handled at the worker level: after IDBFS mount, the
+worker `os.chdir('/workspace')` once, and the CLI wrapper in #28
+re-asserts that cwd before each invocation. Consumers can therefore
+pass workspace-relative paths to the bridge without translation.
+
 ## Cross-cutting (carried from `spec.md` §6.5 / §10)
 
 These will be enumerated as their owning features land in E1/E2 and
