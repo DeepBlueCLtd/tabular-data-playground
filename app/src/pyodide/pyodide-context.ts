@@ -1,4 +1,5 @@
 import { createContext } from 'react';
+import type { FsEventBus } from '@/fs/events';
 import type { Vfs } from '@/fs/vfs';
 
 export type PyodideStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -30,6 +31,8 @@ export interface PyodideContextValue {
   runPython: (code: string) => Promise<RunPythonResult>;
   /** Virtual FS over the worker's IDBFS. Null until status === 'ready'. */
   vfs: Vfs | null;
+  /** Pub-sub bus for fs-changed events fanned out from the worker. */
+  fsEvents: FsEventBus;
 }
 
 export const PyodideContext = createContext<PyodideContextValue | null>(null);

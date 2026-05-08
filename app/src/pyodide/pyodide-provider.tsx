@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { FsEventBus } from '@/fs/events';
 import { createVfs, type Vfs } from '@/fs/vfs';
 import {
   PyodideContext,
@@ -33,6 +34,7 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
   const pendingRef = useRef(new Map<string, Pending>());
   const inflightRef = useRef<Promise<unknown>>(Promise.resolve());
   const statusRef = useRef<PyodideStatus>('idle');
+  const fsEventsRef = useRef(new FsEventBus());
 
   useEffect(() => {
     statusRef.current = status;
@@ -89,9 +91,10 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
               stderr: msg.stderr,
             });
           }
+        } else if (msg.type === 'fs-changed') {
+          fsEventsRef.current.emit(msg.paths);
         }
         // 'fs-result' is consumed by createVfs's own listener.
-        // 'fs-changed' fan-out lands in #12.
       });
 
       worker.addEventListener('error', (event) => {
@@ -181,6 +184,7 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
       run,
       runPython,
       vfs,
+      fsEvents: fsEventsRef.current,
     }),
     [status, error, pyodideVersion, frictionlessVersion, reload, run, runPython, vfs],
   );
