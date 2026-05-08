@@ -6,8 +6,8 @@ A contributor cloning the repo wants to confirm the scaffold runs.
 
 ```bash
 cd app
-npm install         # item #5 will switch this to `pnpm install --frozen-lockfile`
-npm run dev
+pnpm install --frozen-lockfile   # uses the committed pnpm-lock.yaml (item #5)
+pnpm run dev
 ```
 
 Open the URL printed by Vite (default `http://localhost:5173`). You
@@ -21,20 +21,20 @@ healthy.
 
 ```bash
 cd app
-npm run build       # tsc --noEmit && vite build
+pnpm run build       # tsc --noEmit && vite build
 ```
 
 Bundle lands under `app/dist/`. Serve it locally with:
 
 ```bash
-npm run preview
+pnpm run preview
 ```
 
 ## Type-check only
 
 ```bash
 cd app
-npm run typecheck   # alias: npm test (until Vitest is wired)
+pnpm run typecheck   # alias: pnpm test (until Vitest is wired)
 ```
 
 ## Configure the deployment base path
@@ -44,7 +44,7 @@ item #34 wires GitHub Pages, the deploy workflow will set
 `VITE_BASE_PATH=/<repo>/` in the build step.
 
 ```bash
-VITE_BASE_PATH=/tabular-data-playground/ npm run build
+VITE_BASE_PATH=/tabular-data-playground/ pnpm run build
 ```
 
 ## Layout reference

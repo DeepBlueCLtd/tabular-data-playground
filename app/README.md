@@ -10,21 +10,25 @@ Phase 3), see backlog item #54.
 
 ## Commands
 
+The project uses pnpm. The `packageManager` field in `package.json`
+pins the version (Corepack-aware). Enable Corepack once
+(`corepack enable`) and pnpm is auto-installed on first command.
+
 ```bash
-# install (later replaced by `pnpm install --frozen-lockfile` in item #5)
-npm install
+# install — exact lockfile-pinned tree
+pnpm install --frozen-lockfile
 
 # dev server with HMR (default http://localhost:5173)
-npm run dev
+pnpm run dev
 
 # production build → app/dist/
-npm run build
+pnpm run build
 
 # preview the production build locally
-npm run preview
+pnpm run preview
 
 # type-check only
-npm run typecheck   # alias of `npm test` until Vitest wires up
+pnpm run typecheck   # alias of `pnpm test` until Vitest wires up
 ```
 
 ## Layout
