@@ -137,6 +137,22 @@ edges:
   drops to memory-only — files survive the session but not a
   reload. The facade does not detect or warn about this in v1.
 
+### Editor split is 2-pane horizontal only
+
+The editor split (#9) is a v1 simplification of the constitution's
+"drag-to-split horizontal panes via `react-mosaic` /
+`dockview`". Behaviour delivered:
+
+- One "Split editor" toggle button creates a second pane to the
+  right of the primary; "Close split" merges back.
+- Drag the vertical divider to resize.
+- Each pane has an independent active tab; both share the same
+  global tab list.
+
+Out of scope for v1: drag-to-split-from-empty, vertical splits,
+>2 panes, drag-tabs-between-panes. Documented in
+`specs/033-editor-split/plan.md` Complexity Tracking.
+
 ### Drag-and-drop importer caps and quirks
 
 The drag-and-drop importer (#17) uses
