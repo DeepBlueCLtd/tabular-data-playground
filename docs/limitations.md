@@ -94,9 +94,27 @@ PASSED in Chromium 141 and Firefox 142. Findings:
 
 ### Measurement C — Pyodide latency budget
 
-**Status: PENDING.** See `backlog.md` item #3. Cancellation strategy
-(item #31) depends on the placement decision recorded after that
-measurement.
+Captured 2026-05-08 via headless Playwright. Findings:
+
+- **Pyodide on Firefox is markedly slower than on Chromium.** Cold
+  call ~3.7 s vs ~1.0 s; warm-call median 328 ms vs 66 ms (a 5×
+  gap). Across both browsers, the only way to keep the warm-call
+  experience responsive is to host Pyodide in a Web Worker so the
+  main thread stays unblocked. The cancellation note below depends
+  on this.
+- **Per-call wire-up cost (Python snippet generation, JSON marshalling)
+  is non-trivial.** Even on Chromium, warm calls are ~60 ms each;
+  most of that is Frictionless work, but the JS↔Pyodide round-trip
+  is not free either. The eventual command bridge (E1 #28) should
+  avoid per-call snippet construction; pre-compile a Python helper
+  on first load instead.
+- **Headless Playwright timings are illustrative, not authoritative.**
+  Headed-browser numbers on the author's actual machine remain the
+  decision-grade signal for v1 sign-off.
+- **No SharedArrayBuffer / no Worker-thread requirement for
+  Worker placement.** The Web Worker decision lifts the
+  "no in-band cancellation if main-thread" caveat above (now
+  obsolete; this doc will lose that line at E1 once #31 lands).
 
 ## Cross-cutting (carried from `spec.md` §6.5 / §10)
 

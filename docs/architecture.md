@@ -146,8 +146,78 @@ rejected operator. E1 mini-shell items (#21–#26) may proceed.
 
 ### Measurement C — Pyodide latency budget
 
-**Status: PENDING.** Implementation tracked under `backlog.md` item
-#3. The Spike A timings above are a coarse first signal; Measurement C
-will produce the proper recommendation on main-thread vs Web Worker
-placement (which determines item #27 architecture and item #31
-cancellation strategy).
+**Status**: Captured 2026-05-08 via headless Playwright on
+Chromium 141 and Firefox 142 (Linux developer-class machine).
+
+**Threshold (from `spec.md` §10 R3)**: cold call < 3000 ms AND
+warm-call median < 250 ms → main-thread acceptable for v1.
+
+#### Chromium 141 (Playwright headless)
+
+- **Verdict**: **MAIN-THREAD-OK** — cold 995 ms < 3000 and warm
+  median 66 ms < 250.
+- Versions: Pyodide `0.27.7` (pinned URL as Spike A) ; Frictionless
+  `5.19.0`.
+- Setup (context only): pyodide_load 1979 ms, micropip_install
+  3088 ms.
+- Cold call: 995 ms.
+- Warm calls (N = 10): median 66 ms, p95 75 ms.
+  raw: 73, 67, 62, 61, 62, 65, 62, 75, 70, 66.
+
+#### Firefox 142 (Playwright headless)
+
+- **Verdict**: **WORKER-RECOMMENDED** — cold 3718 ms over limit
+  3000; warm median 328 ms over limit 250.
+- Versions: Pyodide `0.27.7` ; Frictionless `5.19.0` (identical to
+  Chromium).
+- Setup (context only): pyodide_load 7.4 s; micropip_install 10.6 s.
+- Cold call: 3718 ms.
+- Warm calls (N = 10): median 328 ms, p95 334 ms.
+  raw: 325, 334, 327, 318, 329, 331, 334, 329, 326, 322.
+
+#### Recommendation (resolves E1 items #27 and #31)
+
+**Place Pyodide in a Web Worker for v1, on every browser.** Headless
+Firefox's warm-call median (328 ms) and cold call (3718 ms) both
+exceed the threshold; headless Chromium has wide headroom. Even
+allowing for headed Firefox being faster than Playwright headless,
+the Chromium vs Firefox gap is too large to bet on a uniformly
+responsive main-thread experience.
+
+Implications:
+
+- **#27 Pyodide loader** — implement against `Worker` from the
+  outset (not "decide later"). The loader becomes a tiny postMessage
+  facade; commands and stdio go through a structured-clone protocol.
+- **#31 Cancellation** — un-blocks. Ctrl+C and Cancel button are
+  implementable via `worker.terminate()` followed by a fresh worker
+  spawn. The "in-band cancellation if main-thread" carve-out in
+  `docs/limitations.md` no longer applies; remove that line at E1.
+- **Lesson 1 / E2** — the loading-state UI (#29) must remain visible
+  for the cold-call window on Firefox (~3.7 s headless; expect
+  ~2 s headed but still noticeable). The "Loading Python…"
+  indicator should not fade out before Pyodide is genuinely ready.
+
+#### Caveats
+
+- These numbers come from Playwright headless on a single Linux
+  developer-class machine. Headed measurements on the author's
+  primary browser are authoritative for any close call near the
+  threshold — re-run before tagging v1 if the gap narrows.
+- The CSV used (~7 rows, 3 columns) is small; `validate` is
+  dominated by Frictionless overhead, not data volume. A larger CSV
+  would shift absolute numbers but is unlikely to change the
+  Chromium/Firefox ordering or the verdict.
+
+---
+
+## Phase 0 — Overall go / no-go for E1
+
+**Go.** All three Phase 0 items resolved with PASS or with a
+recommendation that does not block E1:
+
+- Spike A: PASS in Chromium and Firefox.
+- Spike B: PASS in Chromium and Firefox.
+- Measurement C: split verdict; recommendation = put Pyodide in a
+  Web Worker. E1 items #27 and #31 may proceed with that
+  architecture.
