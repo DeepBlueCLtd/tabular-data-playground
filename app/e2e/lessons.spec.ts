@@ -15,13 +15,11 @@ test.describe('Lesson loader (#38)', () => {
 
     await page.goto('/');
 
-    // Lessons activity is the default-active panel — no click needed.
-
-    // Sample lesson is preselected by the temporary picker (#37 will
-    // replace it with the curriculum index).
-    const picker = page.locator('[data-temp-picker]');
-    await expect(picker).toBeVisible();
-    await expect(picker).toHaveValue('_sample');
+    // Lessons activity is the default-active panel. The curriculum
+    // index (#37) is the default view — click the sample row to
+    // open it.
+    await expect(page.locator('[data-curriculum-index]')).toBeVisible();
+    await page.locator('[data-lesson-slug="_sample"]').click();
 
     // Lesson body and header.
     await expect(page.getByRole('heading', { name: 'Sample lesson (dev only)' })).toBeVisible();
@@ -79,6 +77,7 @@ test.describe('Lesson loader (#38)', () => {
     // wait for it. We open the lesson and check for body content
     // before the "Python ready" status fires.
     await page.goto('/');
+    await page.locator('[data-lesson-slug="_sample"]').click();
 
     // The lesson body becomes visible while the Pyodide status is
     // still "Loading Python…".
@@ -138,6 +137,7 @@ test.describe('Copy + Run buttons (#39)', () => {
       .catch(() => undefined);
 
     await page.goto('/');
+    await page.locator('[data-lesson-slug="_sample"]').click();
     const bashActions = page.locator(
       '.lesson-code-block:has(code.language-bash) [data-lesson-code-actions]',
     );
@@ -156,6 +156,7 @@ test.describe('Copy + Run buttons (#39)', () => {
     page,
   }) => {
     await page.goto('/');
+    await page.locator('[data-lesson-slug="_sample"]').click();
     const runButton = page
       .locator('.lesson-code-block:has(code.language-bash) [data-lesson-code-actions]')
       .getByRole('button', { name: 'Run' });
@@ -170,6 +171,7 @@ test.describe('Copy + Run buttons (#39)', () => {
   test('Most-recent block is marked when Pyodide is ready (#40 FR-004)', async ({ page }) => {
     test.setTimeout(PYODIDE_BOOT_TIMEOUT + 30_000);
     await page.goto('/');
+    await page.locator('[data-lesson-slug="_sample"]').click();
     await awaitPyodideOrSkip(page);
 
     const bashBar = page
@@ -190,6 +192,7 @@ test.describe('Load lesson files (#41)', () => {
   }) => {
     test.setTimeout(PYODIDE_BOOT_TIMEOUT + 30_000);
     await page.goto('/');
+    await page.locator('[data-lesson-slug="_sample"]').click();
     await awaitPyodideOrSkip(page);
 
     const button = page.getByRole('button', { name: /^Load lesson files$/ });
@@ -212,6 +215,7 @@ test.describe('Load lesson files (#41)', () => {
   }) => {
     test.setTimeout(PYODIDE_BOOT_TIMEOUT + 30_000);
     await page.goto('/');
+    await page.locator('[data-lesson-slug="_sample"]').click();
     await awaitPyodideOrSkip(page);
 
     // First click — copies starter files (workspace was empty).

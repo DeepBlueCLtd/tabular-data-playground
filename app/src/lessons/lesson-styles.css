@@ -1,5 +1,64 @@
 @import 'highlight.js/styles/github.css';
 
+.curriculum-index {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.curriculum-index--empty {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+}
+
+.curriculum-index-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.25rem 0.75rem;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.curriculum-index-row:hover {
+  background-color: hsl(var(--muted));
+  border-color: hsl(var(--border));
+}
+
+.curriculum-index-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.curriculum-index-order {
+  color: hsl(var(--muted-foreground));
+  font-weight: 400;
+  margin-right: 0.15rem;
+}
+
+.curriculum-index-time {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  white-space: nowrap;
+}
+
+.curriculum-index-summary {
+  grid-column: 1 / -1;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.35;
+}
+
 .lesson-view {
   display: flex;
   flex-direction: column;

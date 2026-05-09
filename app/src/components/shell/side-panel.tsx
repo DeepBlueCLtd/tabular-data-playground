@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { DragDropImporter } from '@/file-tree/drag-drop-importer';
 import { FileTree } from '@/file-tree/file-tree';
 import { ResetWorkspaceButton } from '@/file-tree/reset-workspace-button';
-import { LessonView, getLessonIndex } from '@/lessons';
+import { CurriculumIndex, LessonView, getLessonIndex } from '@/lessons';
 import type { ActivityEntry } from './activity-bar';
 
 interface SidePanelProps {
@@ -11,28 +11,25 @@ interface SidePanelProps {
 
 function LessonsPane() {
   const index = getLessonIndex();
-  const [selected, setSelected] = useState<string | null>(index.entries[0]?.slug ?? null);
+  const [selected, setSelected] = useState<string | null>(null);
 
+  if (selected === null) {
+    return (
+      <div className="flex flex-1 flex-col overflow-auto p-3 text-sm">
+        <CurriculumIndex entries={index.entries} onSelect={setSelected} />
+      </div>
+    );
+  }
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      {/* TODO(#37): replace this <select> picker with the curriculum index. */}
       <div className="border-b border-border px-3 py-2">
-        <label className="block text-xs uppercase tracking-wide text-muted-foreground">
-          Lesson
-        </label>
-        <select
-          data-temp-picker
-          className="mt-1 w-full rounded border border-border bg-background px-2 py-1 text-sm"
-          value={selected ?? ''}
-          onChange={(e) => setSelected(e.target.value || null)}
+        <button
+          type="button"
+          className="text-xs text-muted-foreground hover:underline"
+          onClick={() => setSelected(null)}
         >
-          {index.entries.length === 0 ? <option value="">(no lessons available)</option> : null}
-          {index.entries.map((meta) => (
-            <option key={meta.slug} value={meta.slug}>
-              {meta.order}. {meta.title}
-            </option>
-          ))}
-        </select>
+          ← Curriculum
+        </button>
       </div>
       <div className="flex-1 overflow-auto p-3 text-sm">
         <LessonView slug={selected} />
