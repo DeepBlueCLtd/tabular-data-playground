@@ -1,0 +1,7 @@
+{
+  "title": "Transform",
+  "slug": "06-transform",
+  "order": 6,
+  "summary": "A small ETL: read books.csv, drop a column, filter rows, add a derived column, write the result. Uses the Python pipeline API because the v5 CLI does not expose `transform`.",
+  "estimatedMinutes": 25
+}
