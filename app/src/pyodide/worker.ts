@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-import { PYODIDE_INDEX_URL, PYODIDE_SCRIPT_URL } from './config';
+import { FRICTIONLESS_VERSION, PYODIDE_INDEX_URL, PYODIDE_SCRIPT_URL } from './config';
 import type {
   FsErrorPayload,
   FsRequest,
@@ -91,7 +91,7 @@ async function load() {
     stage = 'frictionless-install';
     await pyodide.runPythonAsync(`
 import micropip
-await micropip.install("frictionless")
+await micropip.install("frictionless==${FRICTIONLESS_VERSION}")
 `);
 
     let frictionlessVersion: string | null = null;
