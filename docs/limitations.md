@@ -345,6 +345,15 @@ live at authoring time. If it goes away, swap to another
   and its transitive deps work; arbitrary user `pip install`s
   may not. Surfaced if a learner tries to extend a lesson
   with `import pandas`.
+- **The `python` shell command is script-only.** The mini-shell
+  recognises `python <script.py> [args...]` and runs the file
+  through the Pyodide worker (`runpy.run_path`, with `sys.argv`
+  set and the workspace cwd respected). Interactive forms
+  (`python`, `python -i`, `python -c "…"`) and stdin into the
+  script are intentionally out of scope; lesson 6 is the only
+  curriculum surface that uses `python` and only in the script
+  form. Errors during the script print a Python traceback to
+  the terminal and the command exits non-zero.
 - **No in-IDE note-taking.** The Notes & Observations
   sections are *author-side* (Principle II); the deployed app
   has no UI for a learner to capture their own notes.

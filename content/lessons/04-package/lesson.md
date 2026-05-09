@@ -73,7 +73,8 @@ resolve.
 
 ## Break the foreign key, see the report
 
-Open `books.csv` in the editor (Files panel) and change row 2's
+Open `books.csv` in the editor (Files panel) and find the
+*Solaris* row (editor line 3 — the second data row). Change its
 `author_id` from `2` to `99` (an id that doesn't exist in
 `authors.csv`). Save and re-run:
 

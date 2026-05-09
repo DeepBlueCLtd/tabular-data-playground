@@ -55,7 +55,8 @@ an inquiry is the right shape.
 ## Break a task and watch the report
 
 Edit `books.csv` (Files panel) to introduce a duplicate id —
-say change row 6's `id` to `1`. Re-run:
+say change the *Stars in My Pocket* row's `id` (editor line 6)
+from `5` to `1`. Re-run:
 
 ```bash
 frictionless validate inquiry.json
@@ -66,7 +67,7 @@ inquiry runs each task **independently**: a failure in one
 doesn't abort the others. This is exactly what you want from
 a CI step.
 
-Restore `id` to `5` to recover.
+Restore the *Stars* `id` to `5` to recover.
 
 ## Notes & Observations
 
