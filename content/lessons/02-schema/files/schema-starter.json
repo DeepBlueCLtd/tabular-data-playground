@@ -1,0 +1,10 @@
+{
+  "fields": [
+    { "name": "id", "type": "integer" },
+    { "name": "title", "type": "string" },
+    { "name": "author", "type": "string" },
+    { "name": "published_year", "type": "integer" },
+    { "name": "pages", "type": "integer" },
+    { "name": "in_print", "type": "boolean" }
+  ]
+}

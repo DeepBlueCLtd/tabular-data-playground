@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tabular-data-playground.local/lesson-meta.schema.json",
+  "title": "Lesson meta",
+  "description": "Per-lesson metadata file for /content/lessons/<slug>/meta.json. Bundled at build time into the lesson index.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["title", "slug", "order", "summary", "estimatedMinutes"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "description": "Display title in the curriculum index and lesson header."
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9_][a-z0-9-]*$",
+      "description": "URL-safe id; MUST equal the folder name. Underscore-prefixed slugs are excluded from production builds."
+    },
+    "order": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Curriculum position; ascending sort key. Must be unique across lessons in the same build."
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "One-line description shown under the title in the index."
+    },
+    "estimatedMinutes": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Author's best guess at completion time."
+    }
+  }
+}

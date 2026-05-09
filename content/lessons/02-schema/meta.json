@@ -1,0 +1,7 @@
+{
+  "title": "Write a Schema by hand",
+  "slug": "02-schema",
+  "order": 2,
+  "summary": "Hand-author a Table Schema, tighten the inferred types with constraints and a primary key, and validate against it.",
+  "estimatedMinutes": 18
+}

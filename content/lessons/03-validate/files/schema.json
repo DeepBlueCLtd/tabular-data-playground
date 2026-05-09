@@ -1,0 +1,11 @@
+{
+  "fields": [
+    { "name": "id", "type": "integer", "constraints": { "required": true, "unique": true } },
+    { "name": "title", "type": "string", "constraints": { "required": true } },
+    { "name": "author", "type": "string", "constraints": { "required": true } },
+    { "name": "published_year", "type": "year" },
+    { "name": "pages", "type": "integer", "constraints": { "minimum": 1 } },
+    { "name": "in_print", "type": "boolean", "constraints": { "required": true } }
+  ],
+  "primaryKey": "id"
+}

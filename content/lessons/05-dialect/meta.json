@@ -1,0 +1,7 @@
+{
+  "title": "Dialect & encoding quirks",
+  "slug": "05-dialect",
+  "order": 5,
+  "summary": "Real-world CSVs aren't always comma-separated UTF-8. Read a sketchy vendor file, see what Frictionless infers (and mis-infers), and fix it with dialect + schema overrides.",
+  "estimatedMinutes": 20
+}

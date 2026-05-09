@@ -4,6 +4,11 @@ import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { useTheme } from '@/theme/use-theme';
 import { LineEditor } from './line-editor';
+import {
+  setTerminalRunning,
+  setTerminalSubmit,
+  type TerminalSubmit,
+} from './terminal-submit-store';
 
 const PROMPT = '$ ';
 
@@ -66,21 +71,49 @@ export function TerminalView({ onCommand }: Props) {
       },
     };
 
+    async function dispatch(line: string): Promise<void> {
+      // Run a command from any source (user typing or external Run
+      // button). Uses the same busy gate as user-typed commands.
+      busyRef.current = true;
+      setTerminalRunning(true);
+      try {
+        await onCommandRef.current(line, api);
+      } finally {
+        busyRef.current = false;
+        setTerminalRunning(false);
+        term.write(`${PROMPT}`);
+      }
+    }
+
     const onData = term.onData((data) => {
       if (busyRef.current) return;
       handleData(term, lineRef.current, data, async () => {
         const line = lineRef.current.pushHistory();
         lineRef.current.reset();
         term.write('\r\n');
-        busyRef.current = true;
-        try {
-          await onCommandRef.current(line, api);
-        } finally {
-          busyRef.current = false;
-          term.write(`${PROMPT}`);
-        }
+        await dispatch(line);
       });
     });
+
+    // Register an external submit hook for #39's Run button.
+    const submit: TerminalSubmit = async (line) => {
+      // If the user is mid-typing, drop their in-progress line and
+      // start fresh with the externally submitted command. This is
+      // the documented best-effort behaviour (spec FR §Edge Cases).
+      if (busyRef.current) {
+        // A previous command is still running — refuse; #40 disables
+        // the button to prevent this from being clicked.
+        return;
+      }
+      lineRef.current.pushHistory();
+      lineRef.current.reset();
+      // Clear any in-progress typed text on the current line and
+      // re-write a fresh prompt + the submitted command. Then \r\n
+      // so the command output begins on the next line.
+      term.write(`\r\x1b[K${PROMPT}${line}\r\n`);
+      await dispatch(line);
+    };
+    setTerminalSubmit(submit);
 
     const ro = new ResizeObserver(() => {
       try {
@@ -92,6 +125,8 @@ export function TerminalView({ onCommand }: Props) {
     ro.observe(container);
 
     return () => {
+      setTerminalSubmit(null);
+      setTerminalRunning(false);
       ro.disconnect();
       onData.dispose();
       term.dispose();

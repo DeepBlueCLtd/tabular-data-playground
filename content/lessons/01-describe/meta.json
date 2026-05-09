@@ -1,0 +1,7 @@
+{
+  "title": "Describe a CSV",
+  "slug": "01-describe",
+  "order": 1,
+  "summary": "Auto-generate metadata from a single CSV with `frictionless describe`. The starting point for every Frictionless flow.",
+  "estimatedMinutes": 12
+}

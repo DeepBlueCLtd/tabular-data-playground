@@ -201,6 +201,42 @@ URL is the pin (Constitution Principle VI). Two consequences:
   structure we rely on Monaco's column ruler and the lesson copy
   rather than syntax highlighting.
 
+### Pyodide-dependent e2e tests skip when the runtime fails to load
+
+Some Playwright tests (the `Load lesson files (#41)` flows) require
+Pyodide to fully load + `micropip.install("frictionless")`. Pyodide
+loads on a Web Worker (Measurement C), which means the worker context
+must be able to fetch the CDN. In some local sandboxes / corporate
+proxies the main thread can reach the CDN but the worker cannot —
+yielding `Python: error` instead of `Python: ready`. The affected
+tests detect this and call `test.skip()` with a diagnostic message
+rather than fail. The deployed-site verification at epic close
+(`spec.md` §11 E2 done — "live on the deployed Pages site") remains
+the authoritative gate; CI on a normal runner reaches `Python: ready`
+in well under the 180 s budget.
+
+### Load lesson files — no rollback, "any existing file" prompts
+
+The **Load lesson files** action (#41) copies
+`/content/lessons/<slug>/files/` into `/workspace/<slug>/`. Two sharp
+edges:
+
+- **No rollback on partial failure.** If a file write fails mid-batch
+  (transient worker error, IDBFS quota mid-flight), the action stops
+  and surfaces the offending path. Already-written files are kept;
+  un-written files are not retried. The user can delete the partial
+  state via the file tree or **Reset workspace** and try again. v1
+  does not implement transactional rollback because IDBFS has no
+  cross-file transaction primitive over the worker bridge.
+- **"Any file" treated as a user edit.** The collision check is by
+  path, not by content. If a starter file at the same path is already
+  present in the workspace — even one identical to the bundled
+  starter, e.g. from a previous **Load lesson files** click — the
+  modal still asks before overwriting. We accept the small
+  over-prompt to keep Principle III's behaviour symmetric and
+  inspection-free. (#17 makes the same trade-off for drag-and-drop
+  imports.)
+
 ### Frictionless absolute-path workaround moved to the worker
 
 The Phase 0 finding ("Frictionless rejects absolute paths as 'not
@@ -209,19 +245,115 @@ worker `os.chdir('/workspace')` once, and the CLI wrapper in #28
 re-asserts that cwd before each invocation. Consumers can therefore
 pass workspace-relative paths to the bridge without translation.
 
+## E2 findings (lesson system, curriculum)
+
+### Lesson 6 (Transform) is the most version-fragile in the curriculum
+
+`frictionless transform` has changed materially across major
+versions of Frictionless, and v5.19's CLI does **not** expose a
+`transform` command at all — the lesson uses the Python `transform`
+function via a small `python run-pipeline.py` script. Two
+specific quirks recorded while authoring lesson 6:
+
+- `row-filter` formulas operate on **raw string values**, not the
+  schema's typed values. A formula like `published_year >= 1970`
+  raises `TypeError`; the working form is `int(published_year) >= 1970`.
+- `field-remove` takes `names` (plural list) while other steps
+  take `name` (singular). Inconsistent across the step family.
+
+The `requirements` lock (`micropip.install("frictionless==5.19.0")`)
+is the version contract. **Do not bump frictionless without
+re-walking lesson 6** (Principle VI; the lesson body itself
+carries this warning).
+
+### Inquiry-embedded schemas are stricter than package-level schemas
+
+Surfaced while authoring lesson 7. Two real foot-stubs:
+
+- `"primaryKey": "id"` (string form) is accepted in package
+  schemas but **rejected** inside an inquiry's embedded schema —
+  the inquiry path enforces the spec's stricter "must be array"
+  rule. Use `"primaryKey": ["id"]` in inquiry contexts.
+- `"schema": "schema.json"` (file reference) works in resource
+  descriptors but **fails** inside an inquiry task with `'str'
+  object has no attribute 'to_descriptor_source'`. Embed schemas
+  inline in inquiry tasks.
+
+Both are noted in lesson 7's body so a learner copy/pasting
+schemas from lesson 2 hits the documentation, not a stack
+trace.
+
+### Type inference can mistake decimal-comma numbers for `geopoint`
+
+Surfaced in lesson 5. A semicolon-delimited European CSV with
+prices like `9,50` infers `price_eur` as `geopoint` (because the
+comma reads as a coordinate separator). Override with
+`{ "type": "number", "decimalChar": "," }` in the schema. Type
+inference has cultural priors; the lesson uses this as a
+teaching moment.
+
+### Validate without a schema returns VALID even on broken data
+
+The most important footgun in Frictionless. `frictionless
+validate file.csv` with no `--schema` flag runs only
+**structural** checks — every row has the right column count,
+the file parses as CSV. Semantic checks (booleans, uniqueness,
+required, foreign keys) all need a schema. Promoted to a
+dedicated section in lesson 3 rather than a footnote.
+
+### Self-hosted package URL is brittle
+
+Lesson 8 hard-codes the deployed Pages URL
+(`https://deepbluecltd.github.io/tabular-data-playground/sample-package/datapackage.json`).
+If the repo / account moves, the lesson body needs an edit.
+Documented inline in lesson 8's Notes section. v1.0 ships
+with the URL pinned to the current account.
+
+### Public Frictionless tutorials often cite dead URLs
+
+Many third-party tutorials cite
+`raw.githubusercontent.com/datasets/country-codes/master/datapackage.json`
+— that's a 404 (the repo's default branch is `main`, not
+`master`). Lesson 8 was authored against
+`datasets/world-cities/main/datapackage.json` which was verified
+live at authoring time. If it goes away, swap to another
+`datasets/*` package on GitHub.
+
 ## Cross-cutting (carried from `spec.md` §6.5 / §10)
 
-These will be enumerated as their owning features land in E1/E2 and
-are listed here as forward references:
-
-- No SharedArrayBuffer (cross-origin isolation) on GitHub Pages —
-  confirmed during Spike A.
-- Serialised pipes in the mini-shell (no parallel stages).
-- No `&&` / `||` / `;` chaining, no subshells, no env-var expansion,
-  no globs, no tab completion.
-- `ModuleNotFoundError` for Python packages without Pyodide-compatible
-  wheels.
-- No in-IDE note-taking.
-- No mobile / small-screen support.
-- No in-band cancellation if Pyodide ends up on the main thread
-  (decision deferred to Measurement C, item #3).
+- **No SharedArrayBuffer (cross-origin isolation) on GitHub
+  Pages** — confirmed during Spike A. The deployment cannot
+  serve COOP/COEP headers; threading and shared-memory APIs
+  are unavailable to the Pyodide worker.
+- **Serialised pipes in the mini-shell.** Each pipeline stage
+  reads its input fully before the next stage starts; no
+  parallel-stage streaming. Documented in
+  `specs/031-shell-executor/`. Real cost: a pipeline like
+  `frictionless validate big.csv | grep INVALID` buffers the
+  full Frictionless output before grep starts. Acceptable for
+  the curriculum's data sizes.
+- **No `&&` / `||` / `;` chaining, no subshells `$(...)`, no
+  env-var expansion `$VAR`, no globs `*.csv`, no tab
+  completion.** The mini-shell parser rejects each of these
+  with a one-line message naming the operator. Lessons that
+  would naturally use these (e.g., "validate every CSV in
+  this folder") are written as multi-step explicit invocations
+  instead.
+- **`ModuleNotFoundError` for Python packages without
+  Pyodide-compatible wheels.** Pyodide ships a curated set of
+  wheels; not every PyPI package is available. `frictionless`
+  and its transitive deps work; arbitrary user `pip install`s
+  may not. Surfaced if a learner tries to extend a lesson
+  with `import pandas`.
+- **No in-IDE note-taking.** The Notes & Observations
+  sections are *author-side* (Principle II); the deployed app
+  has no UI for a learner to capture their own notes.
+- **No mobile / small-screen support.** The "best on a wider
+  screen" notice (#32) appears below ~900 px width. The
+  layout assumes a desktop viewport; touch interactions are
+  not designed for.
+- **No in-band cancellation when Pyodide is on the main
+  thread.** Resolved by Measurement C (item #3): Pyodide
+  runs on a Web Worker, so Ctrl+C / Cancel terminate the
+  worker (#31). This carve-out from the original
+  cross-cutting list is now obsolete.

@@ -221,3 +221,182 @@ recommendation that does not block E1:
 - Measurement C: split verdict; recommendation = put Pyodide in a
   Web Worker. E1 items #27 and #31 may proceed with that
   architecture.
+
+## Runtime architecture (E1 + E2)
+
+The deployed app is a single static SPA. Three computational
+contexts cooperate:
+
+```
+Browser                                       │ Pyodide Web Worker
+                                              │
+┌──────────────────────────────────────────┐  │  ┌────────────────────────┐
+│ React UI                                 │  │  │ Pyodide                │
+│ ─────────                                │  │  │ ──────                 │
+│ AppShell ─ ActivityBar / SidePanel       │  │  │ • IDBFS @ /workspace   │
+│            EditorArea / TerminalPanel    │  │  │ • micropip install    │
+│            StatusBar                     │  │  │   frictionless==5.19.0│
+│                                          │  │  │ • CLI bridge          │
+│ LessonView ─ CurriculumIndex / Renderer  │  │  │   (#28)                │
+│              CopyRunBar / LoadFiles      │  │  │                        │
+│                                          │  │  │ os.chdir('/workspace') │
+│ MiniShell                                │  │  │ once at mount          │
+│  tokenise → parse → execute              │  │  │                        │
+│   ├── builtins (ls, cat, mkdir, …)       │◄─┼──►│                        │
+│   └── frictionless * → bridge ───────────┼──┼──►│ stdin/stdout/stderr   │
+│                                          │  │  │ + exit-code capture   │
+│ VFS facade ──── postMessage ─────────────┼──┼──►│                        │
+│   (read/write/readdir/mkdir/remove)      │  │  │                        │
+│                                          │  │  └────────────────────────┘
+└──────────────────────────────────────────┘  │
+                                              │  Web Worker boundary —
+                                              │  Pyodide CDN load happens
+                                              │  here; main thread stays
+                                              │  responsive.
+```
+
+### Why a Web Worker?
+
+Measurement C (above) found that warm-call median was ~328 ms on
+Firefox vs ~66 ms on Chromium. Even Chromium's 66 ms is too long
+to block the main thread on every command — the "Loading
+Python…" indicator and the editor's debounced auto-save would
+both stutter. The Worker decision lifts cancellation (#31) to
+`worker.terminate()` and unblocks the UI thread for the entire
+session.
+
+### How a Run-button click reaches Frictionless
+
+```
+1. CopyRunBar (#39) reads the bash block source.
+2. Calls submit(line) from terminal-submit-store (#39).
+3. Terminal writes "$ <line>\n" to xterm display.
+4. Terminal calls onCommand(line, api), which is useShellRunner.
+5. useShellRunner: tokenise → parse → executePipeline.
+6. Builtin? Run in JS. External? Call run(args, stdin) on the
+   Pyodide bridge.
+7. Bridge posts the args + stdin to the Worker over postMessage.
+8. Worker: chdir('/workspace'); invoke frictionless Typer app
+   with the args; capture stdout/stderr/exit-code; reply.
+9. Main thread: stream stdout to api.print, which xterm renders.
+10. Terminal flips running=false → all Run buttons re-enable.
+```
+
+The state-machine for `running` and `lastRunSource` is centred
+in `terminal-submit-store.ts` (`useSyncExternalStore`-backed
+singleton). Three independent subscribable values:
+
+- `submit: TerminalSubmit | null` — registered by terminal on mount.
+- `running: boolean` — toggled around dispatch (typed OR Run).
+- `lastRunSource: string | null` — set on Run-click; persists.
+
+### Lesson loader pipeline
+
+```
+build time:
+  Vite import.meta.glob('../../../content/lessons/*/meta.json',
+                        eager: true) → Map<path, raw>
+  Vite import.meta.glob('../../../content/lessons/*/lesson.md',
+                        eager: true, query: '?raw') → Map<path, string>
+  Vite import.meta.glob('../../../content/lessons/*/files/**/*',
+                        eager: true, query: '?url') → Map<path, url>
+
+  validate.ts: per-folder check + cross-folder uniqueness check.
+  load.ts: emit {entries, bySlug} index, frozen.
+
+runtime (lesson click):
+  CurriculumIndex.onSelect(slug)
+    → SidePanel state: selected = slug
+    → LessonView({slug})
+        → getLesson(slug) → bySlug.get(slug)
+        → LessonRenderer(body)
+            → react-markdown + remark-gfm + rehype-highlight
+            → <pre> override = LessonCodeBlock with renderActions
+                → copyRunActions(lang, source)
+                  → bash → CopyRunBar; otherwise null
+```
+
+### Load-lesson-files data flow
+
+```
+User clicks "Load lesson files" on lesson <slug>
+  → LoadLessonFilesButton checks vfs.exists() for each
+    starter file's destination path under /workspace/<slug>/
+  → if collisions: ConfirmModal (Principle III)
+       Cancel → zero writes
+       Overwrite → proceed
+  → for each starter file:
+       fetch(assetUrl).arrayBuffer() ──postMessage──► Worker
+       vfs.mkdir(parent, recursive) ──postMessage──► Worker
+       vfs.writeFile(dest, bytes)   ──postMessage──► Worker
+                                     → Worker: IDBFS write + syncfs(false)
+                                     → emit fs-changed
+  → file tree (#15) re-renders via fs-changed (#12)
+```
+
+### Public TS surface from `app/src/lessons/`
+
+| Export | Purpose | Owner |
+|---|---|---|
+| `getLessonIndex()` | All lessons, sorted | #38 |
+| `getLesson(slug)` | One lesson with body | #38 |
+| `getLessonFiles(slug)` | Starter files for a lesson | #41 |
+| `LessonView` | Body renderer (used by SidePanel) | #38 |
+| `CurriculumIndex` | List view (used by SidePanel) | #37 |
+| `LessonCodeBlock` | `<pre>` override | #38 |
+
+### Public TS surface from `app/src/terminal/`
+
+| Export | Purpose | Owner |
+|---|---|---|
+| `setTerminalSubmit(fn|null)` | Internal: terminal lifecycle | #39 |
+| `useTerminalSubmit()` | React hook (Run buttons) | #39 |
+| `setTerminalRunning(b)` | Internal: dispatch wrapper | #40 |
+| `useTerminalRunning()` | React hook (Run-button disable) | #40 |
+| `setLastRunSource(s)` | Run-button click | #40 |
+| `useLastRunSource()` | React hook (most-recent marker) | #40 |
+
+## Build & deploy
+
+- Vite 6 builds `app/` → `app/dist/`. The `app/public/` directory
+  (including `sample-package/` for lesson 8) ships as-is.
+- `VITE_BASE_PATH=/tabular-data-playground/` for GitHub Pages.
+- `pnpm install --frozen-lockfile` in CI; the lockfile is the
+  pinning contract (Principle VI).
+- E2E tests (`pnpm test:e2e`) build with
+  `VITE_INCLUDE_DEV_LESSONS=1` so the underscore-prefixed
+  `_sample` lesson is bundled for assertion purposes; production
+  build excludes it.
+
+## Module map
+
+```
+app/src/
+├── App.tsx                 # Top-level: Landing gate → AppShell
+├── main.tsx
+├── components/
+│   ├── shell/              # AppShell, ActivityBar, SidePanel,
+│   │                       #   StatusBar, TerminalPanel, …
+│   └── ui/                 # ConfirmModal, ImportOverwriteModal, …
+├── editor/                 # Monaco integration, tab persistence
+├── file-tree/              # react-arborist + drag-drop import,
+│                           #   reset-workspace, walk
+├── fs/                     # VFS facade + fs-changed events
+├── landing/                # First-visit gate (#36)
+├── lessons/                # Curriculum (#37, #38, #39, #40, #41)
+├── mini-shell/             # tokenise / parse / execute / builtins
+├── pyodide/                # Worker, command bridge, loading state
+├── terminal/               # xterm + line editor + submit store
+└── theme/                  # Light/dark provider
+```
+
+`content/lessons/` and `app/public/sample-package/` are static
+data, not code.
+
+## Where to read further
+
+- Per-feature designs: `specs/<NNN-slug>/spec.md` and `plan.md`.
+- Sharp edges + workarounds: `docs/limitations.md`.
+- Authoring conventions: `docs/lesson-authoring.md`.
+- Product spec: `spec.md`.
+- Constitutional principles: `.specify/memory/constitution.md`.

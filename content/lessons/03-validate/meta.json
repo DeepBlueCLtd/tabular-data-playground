@@ -1,0 +1,7 @@
+{
+  "title": "Validate & fix errors",
+  "slug": "03-validate",
+  "order": 3,
+  "summary": "Read a real validation report on a messy CSV, classify the error types, and fix them iteratively.",
+  "estimatedMinutes": 22
+}

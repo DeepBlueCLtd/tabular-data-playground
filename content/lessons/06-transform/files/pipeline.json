@@ -1,0 +1,7 @@
+{
+  "steps": [
+    { "type": "field-remove", "names": ["in_print"] },
+    { "type": "row-filter", "formula": "int(published_year) >= 1970" },
+    { "type": "field-add", "name": "century", "value": 20, "descriptor": { "type": "integer" } }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "title": "Build a Data Package",
+  "slug": "04-package",
+  "order": 4,
+  "summary": "Combine multiple resources under one `datapackage.json` with metadata and a foreign-key relationship; validate the package as a whole.",
+  "estimatedMinutes": 24
+}

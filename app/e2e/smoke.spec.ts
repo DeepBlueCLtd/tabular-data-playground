@@ -3,6 +3,17 @@ import { expect, test } from '@playwright/test';
 // Smoke assertions only — no screenshots. Run via `pnpm test:e2e`.
 // Stakeholder-shareable screenshots are captured on demand via
 // `pnpm capture:screenshots` (see e2e/capture-screenshots.spec.ts).
+test.beforeEach(async ({ context }) => {
+  // Suppress the first-visit landing page (#36) for IDE-focused tests.
+  await context.addInitScript(() => {
+    try {
+      localStorage.setItem('landing-seen', '1');
+    } catch {
+      /* ignore */
+    }
+  });
+});
+
 test.describe('IDE shell smoke', () => {
   test('renders chrome and surfaces Pyodide status', async ({ page }) => {
     await page.goto('/');
@@ -12,7 +23,7 @@ test.describe('IDE shell smoke', () => {
 
     // Activity bar buttons.
     await expect(page.getByRole('button', { name: /lessons/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /files/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Files', exact: true })).toBeVisible();
 
     // Terminal panel header.
     await expect(page.getByRole('region', { name: /terminal/i })).toBeVisible();
@@ -35,7 +46,7 @@ test.describe('IDE shell smoke', () => {
 
   test('files panel shows file tree placeholder before runtime', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: /files/i }).click();
+    await page.getByRole('button', { name: 'Files', exact: true }).click();
     await expect(page.getByText(/Reset workspace/i)).toBeVisible();
   });
 });
