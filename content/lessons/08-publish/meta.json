@@ -1,0 +1,7 @@
+{
+  "title": "Publish & consume",
+  "slug": "08-publish",
+  "order": 8,
+  "summary": "Read a remote `datapackage.json` over HTTP. Closes the loop: a package authored locally can be published as static files and consumed by anyone with `frictionless`.",
+  "estimatedMinutes": 15
+}
