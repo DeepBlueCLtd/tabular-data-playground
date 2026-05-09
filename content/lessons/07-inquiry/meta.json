@@ -1,0 +1,7 @@
+{
+  "title": "Inquiry — validate many resources at once",
+  "slug": "07-inquiry",
+  "order": 7,
+  "summary": "An Inquiry bundles several validation tasks into one run. Conceptually thin once Validate is understood — but useful for CI.",
+  "estimatedMinutes": 10
+}
