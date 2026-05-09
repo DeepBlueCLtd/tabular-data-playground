@@ -8,7 +8,11 @@ import { TerminalPanel } from './terminal-panel';
 import { StatusBar } from './status-bar';
 import { WiderScreenNotice } from './wider-screen-notice';
 
-export function AppShell() {
+interface AppShellProps {
+  onReshowLanding?: () => void;
+}
+
+export function AppShell({ onReshowLanding }: AppShellProps = {}) {
   const [active, setActive] = useState<ActivityEntry>('lessons');
   const [collapsed, setCollapsed] = useState(false);
 
@@ -26,7 +30,18 @@ export function AppShell() {
       <WiderScreenNotice />
       <header className="flex items-center justify-between border-b border-border px-4 py-2">
         <span className="text-sm font-medium">Frictionless Data Explorer</span>
-        <ThemeToggle />
+        <div className="flex items-center gap-3">
+          {onReshowLanding ? (
+            <button
+              type="button"
+              onClick={onReshowLanding}
+              className="text-xs text-muted-foreground hover:underline"
+            >
+              What is this?
+            </button>
+          ) : null}
+          <ThemeToggle />
+        </div>
       </header>
       <div className="flex flex-1 min-h-0">
         <ActivityBar active={active} collapsed={collapsed} onSelect={handleSelect} />

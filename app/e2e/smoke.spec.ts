@@ -3,6 +3,17 @@ import { expect, test } from '@playwright/test';
 // Smoke assertions only — no screenshots. Run via `pnpm test:e2e`.
 // Stakeholder-shareable screenshots are captured on demand via
 // `pnpm capture:screenshots` (see e2e/capture-screenshots.spec.ts).
+test.beforeEach(async ({ context }) => {
+  // Suppress the first-visit landing page (#36) for IDE-focused tests.
+  await context.addInitScript(() => {
+    try {
+      localStorage.setItem('landing-seen', '1');
+    } catch {
+      /* ignore */
+    }
+  });
+});
+
 test.describe('IDE shell smoke', () => {
   test('renders chrome and surfaces Pyodide status', async ({ page }) => {
     await page.goto('/');

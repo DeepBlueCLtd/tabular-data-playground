@@ -4,6 +4,18 @@ import { expect, test } from '@playwright/test';
 // production build. The build uses VITE_INCLUDE_DEV_LESSONS=1 (set by
 // the webServer command in playwright.config.ts) so the dev-only
 // `_sample` lesson is bundled. Real `pnpm build` omits it.
+test.beforeEach(async ({ context }) => {
+  // Suppress the first-visit landing page (#36) for these tests; the
+  // landing flow has its own dedicated spec (landing.spec.ts).
+  await context.addInitScript(() => {
+    try {
+      localStorage.setItem('landing-seen', '1');
+    } catch {
+      /* ignore */
+    }
+  });
+});
+
 test.describe('Lesson loader (#38)', () => {
   test('renders sample lesson body with GFM + highlight', async ({ page }) => {
     const consoleErrors: string[] = [];
