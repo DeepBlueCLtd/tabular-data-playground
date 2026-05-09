@@ -7,9 +7,9 @@ test.describe('Landing page (#36)', () => {
     await page.goto('/');
     // No localStorage flag → landing is visible.
     await expect(page.getByRole('dialog', { name: /Frictionless Data Explorer/ })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Start' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Start', exact: true })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Start' }).click();
+    await page.getByRole('button', { name: 'Start', exact: true }).click();
 
     // Landing dismissed; IDE chrome accessible.
     await expect(page.getByRole('dialog', { name: /Frictionless Data Explorer/ })).toHaveCount(0);

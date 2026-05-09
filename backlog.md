@@ -39,7 +39,7 @@ Strikethrough rows indicate completed work.
 |----|-------|-------------|--------|
 | ~~E0~~ | ~~Phase 0 — De-risking Spike~~ | ~~Prove the riskiest things work and gather measurements before committing to the full build (`spec.md` §11)~~ | ~~complete~~ |
 | E1 | Phase 1 — IDE Shell | App shell, virtual FS, editor, terminal, Pyodide wiring; ends at "paste a CSV, run frictionless describe, see output" (`spec.md` §11) | proposed |
-| E2 | Phase 2 — Lesson System + Curriculum | Landing, lesson loader, eight lessons with Notes & Observations, supporting docs (`spec.md` §11) | proposed |
+| ~~E2~~ | ~~Phase 2 — Lesson System + Curriculum~~ | ~~Landing, lesson loader, eight lessons with Notes & Observations, supporting docs (`spec.md` §11)~~ | ~~complete~~ |
 | E3 | Phase 3 — Polish & Freeze | Walkthrough fixups, README, version pinning, v1.0 tag (`spec.md` §11) | proposed |
 
 ## Backlog items
@@ -97,7 +97,7 @@ Strikethrough rows indicate completed work.
 | ~~49~~ | ~~Content~~ | ~~**Lesson 8 — Publish & consume.** Read a remote `datapackage.json`. Primary example uses self-hosted package in this repo's `gh-pages` branch (under our control); secondary "now try this real one" callout points at a public package like one from datahub.io (`spec.md` §8 critical analysis). Notes & Observations section.~~ | ~~5~~ | ~~5~~ | ~~3~~ | ~~13~~ | ~~Medium~~ | ~~complete~~ | ~~E2~~ | ~~2026-05-08~~ | 2026-05-08 |
 | ~~50~~ | ~~Documentation~~ | ~~`docs/lesson-authoring.md` — how to write a new lesson (folder layout, `meta.json`, code-block conventions, Notes & Observations template). (`spec.md` §9)~~ | ~~3~~ | ~~1~~ | ~~5~~ | ~~9~~ | ~~Low~~ | ~~complete~~ | ~~E2~~ | ~~2026-05-08~~ | 2026-05-08 |
 | ~~51~~ | ~~Documentation~~ | ~~`docs/limitations.md` — enumerate Pyodide quirks, no SharedArrayBuffer, serialised pipes, no `&&`/`\|\|`/`;` chaining, `ModuleNotFoundError` for unavailable packages, no in-IDE notes, no mobile, no in-band cancellation if main-thread (decisions #14, #15, #21, #52, #55, `spec.md` §6.5). Implements Principle VII.~~ | ~~3~~ | ~~3~~ | ~~5~~ | ~~11~~ | ~~Low~~ | ~~complete~~ | ~~E2~~ | ~~2026-05-08~~ | 2026-05-08 |
-| 52 | Documentation | `docs/architecture.md` — diagrams, deeper dives, and the Phase 0 measurement C findings (depends on #3). (`spec.md` §9) | 3 | 3 | 3 | 9 | Low | proposed | E2 | 2026-05-08 | 2026-05-08 |
+| ~~52~~ | ~~Documentation~~ | ~~`docs/architecture.md` — diagrams, deeper dives, and the Phase 0 measurement C findings (depends on #3). (`spec.md` §9)~~ | ~~3~~ | ~~3~~ | ~~3~~ | ~~9~~ | ~~Low~~ | ~~complete~~ | ~~E2~~ | ~~2026-05-08~~ | 2026-05-08 |
 | 53 | Polish | Solo-author walkthrough of the entire curriculum end-to-end; fix whatever cracks appear (`spec.md` §11 Phase 3). | 5 | 1 | 5 | 11 | Medium | proposed | E3 | 2026-05-08 | 2026-05-08 |
 | 54 | Documentation | README — project framing, setup, screenshot, **short summary of evaluation findings** drawn from the Notes & Observations sections (`spec.md` §11 Phase 3, §13). | 5 | 5 | 3 | 13 | Medium | proposed | E3 | 2026-05-08 | 2026-05-08 |
 | 55 | Release | Pin Frictionless version and JSON Schema versions; record in README (decision #11, Principle VI, `spec.md` §11 Phase 3, §13). | 3 | 1 | 5 | 9 | Low | proposed | E3 | 2026-05-08 | 2026-05-08 |

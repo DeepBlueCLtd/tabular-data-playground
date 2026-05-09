@@ -2,9 +2,7 @@
   "name": "library",
   "title": "Small Library Catalogue (sample)",
   "description": "Companion data package for lesson 8 of the Frictionless Data Explorer. Self-hosted on the same Pages site as the IDE itself.",
-  "licenses": [
-    { "name": "CC0-1.0", "title": "Creative Commons Zero v1.0 Universal" }
-  ],
+  "licenses": [{ "name": "CC0-1.0", "title": "Creative Commons Zero v1.0 Universal" }],
   "homepage": "https://github.com/DeepBlueCLtd/tabular-data-playground",
   "version": "1.0.0",
   "resources": [
