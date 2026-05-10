@@ -27,8 +27,7 @@ export default defineConfig({
     // and the deployed site are unaffected.
     ignoreHTTPSErrors: process.env.PLAYWRIGHT_INSECURE_CERTS === '1',
     launchOptions: {
-      args:
-        process.env.PLAYWRIGHT_INSECURE_CERTS === '1' ? ['--ignore-certificate-errors'] : [],
+      args: process.env.PLAYWRIGHT_INSECURE_CERTS === '1' ? ['--ignore-certificate-errors'] : [],
     },
   },
   projects: [
