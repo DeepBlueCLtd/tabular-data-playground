@@ -9,8 +9,7 @@ export function NoWasmScreen() {
             Pyodide
           </a>
           , which loads inside a Web Worker and needs WebAssembly there. Your current browser
-          stripped <code>WebAssembly</code> from the worker context, so the lessons cannot run
-          here.
+          stripped <code>WebAssembly</code> from the worker context, so the lessons cannot run here.
         </p>
         <h2>Quickest fix: try a different browser</h2>
         <p>
@@ -22,8 +21,10 @@ export function NoWasmScreen() {
         <h2>Common causes</h2>
         <ul>
           <li>
-            <strong>An enterprise DLP / security extension is stripping WebAssembly inside Web
-            Workers.</strong> Open <code>chrome://policy</code> — if you see
+            <strong>
+              An enterprise DLP / security extension is stripping WebAssembly inside Web Workers.
+            </strong>{' '}
+            Open <code>chrome://policy</code> — if you see
             <code> ExtensionInstallBlocklist: [&quot;*&quot;]</code> with an
             <code> ExtensionInstallAllowlist</code>, your Chrome is managed and a force-allowed
             extension is the likely cause. Ask IT to allowlist this origin for that extension.
