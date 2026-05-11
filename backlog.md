@@ -40,7 +40,7 @@ Strikethrough rows indicate completed work.
 | ~~E0~~ | ~~Phase 0 — De-risking Spike~~ | ~~Prove the riskiest things work and gather measurements before committing to the full build (`spec.md` §11)~~ | ~~complete~~ |
 | E1 | Phase 1 — IDE Shell | App shell, virtual FS, editor, terminal, Pyodide wiring; ends at "paste a CSV, run frictionless describe, see output" (`spec.md` §11) | proposed |
 | ~~E2~~ | ~~Phase 2 — Lesson System + Curriculum~~ | ~~Landing, lesson loader, eight lessons with Notes & Observations, supporting docs (`spec.md` §11)~~ | ~~complete~~ |
-| E3 | Phase 3 — Polish & Freeze | Walkthrough fixups, README, version pinning, v1.0 tag (`spec.md` §11) | proposed |
+| ~~E3~~ | ~~Phase 3 — Polish & Freeze~~ | ~~Walkthrough fixups, README, version pinning, v1.0 tag (`spec.md` §11)~~ | ~~complete~~ |
 
 ## Backlog items
 
@@ -102,4 +102,4 @@ Strikethrough rows indicate completed work.
 | ~~54~~ | ~~Documentation~~ | ~~README — project framing, setup, screenshot, **short summary of evaluation findings** drawn from the Notes & Observations sections (`spec.md` §11 Phase 3, §13).~~ | ~~5~~ | ~~5~~ | ~~3~~ | ~~13~~ | ~~Medium~~ | ~~complete~~ | ~~E3~~ | ~~2026-05-08~~ | 2026-05-09 |
 | ~~55~~ | ~~Release~~ | ~~Pin Frictionless version and JSON Schema versions; record in README (decision #11, Principle VI, `spec.md` §11 Phase 3, §13).~~ | ~~3~~ | ~~1~~ | ~~5~~ | ~~9~~ | ~~Low~~ | ~~complete~~ | ~~E3~~ | ~~2026-05-08~~ | 2026-05-09 |
 | ~~56~~ | ~~Release~~ | ~~Verify Definition of Done (`spec.md` §13): site reachable & loads <8 s broadband cold cache; all 8 lessons run end-to-end; Notes sections populated; terminal feature set complete; workspace persistence + Reset working; CI green; README + version pinning done.~~ | ~~5~~ | ~~1~~ | ~~5~~ | ~~11~~ | ~~Medium~~ | ~~complete~~ | ~~E3~~ | ~~2026-05-08~~ | 2026-05-09 |
-| 57 | Release | Tag v1.0; freeze the artefact as a dated reference (Principle VI, decision #35). | 5 | 5 | 5 | 15 | Low | proposed | E3 | 2026-05-08 | 2026-05-08 |
+| ~~57~~ | ~~Release~~ | ~~Tag v1.0; freeze the artefact as a dated reference (Principle VI, decision #35).~~ | ~~5~~ | ~~5~~ | ~~5~~ | ~~15~~ | ~~Low~~ | ~~complete~~ | ~~E3~~ | ~~2026-05-08~~ | 2026-05-11 |
