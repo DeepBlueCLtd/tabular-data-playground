@@ -343,14 +343,14 @@ Demo target at end of Phase 1: an empty workspace where someone can paste in a C
 - Lesson-authoring docs (`docs/lesson-authoring.md`)
 - Limitations doc (`docs/limitations.md`)
 
-### Phase 3 — Polish & freeze (≈ 1–2 weeks)
+### Phase 3 — Polish & v1.0 milestone (≈ 1–2 weeks)
 
 - Solo author walkthrough of the whole curriculum, fixing whatever cracks appear
 - Write the README, project intro, screenshot, and a short summary of findings drawn from the Notes & Observations sections
 - Pin Frictionless and all schemas to specific versions; record those versions in the README
 - Tag v1.0, announce informally if at all
 
-The artefact is then **frozen as-is** as a public, dated reference. No automated upgrade PRs, no scheduled maintenance — a deliberate decision recorded in §12.
+The `v1.0` tag is a reproducible, dated reference build, **not** a freeze: the project remains in active pre-production development past this milestone. Pinned versions and a committed lockfile mean that any tagged build can be reconstructed; backwards compatibility is not a project goal except where it concerns external Frictionless Data artefacts (see constitution Principle VI).
 
 -----
 
@@ -462,4 +462,4 @@ No new decisions; this revision brought the spec body into line with the decisio
 - [ ] CI green: `pnpm build`, `pnpm test`, Playwright Chromium smoke pass
 - [ ] README with project framing, setup, and a short summary of evaluation findings
 - [ ] Frictionless version and JSON Schema versions pinned; versions recorded in README
-- [ ] Repo tagged v1.0 and the artefact frozen as a dated reference
+- [ ] Repo tagged v1.0 as a reproducible, dated reference build (development continues past this milestone — see constitution Principle VI)
