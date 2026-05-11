@@ -171,18 +171,25 @@ Sharp edges:
   drops over a few hundred files are out of scope for the
   evaluation artefact.
 
-### Bundled JSON Schemas are placeholders
+### Bundled JSON Schemas are pinned snapshots
 
-JSON Schema validation in the editor (#14) ships minimal
-placeholder schemas at `app/src/editor/schemas/{data-package,
-table-dialect,table-schema}.json`. They catch obvious mistakes
-(missing required fields, wrong field type) but are NOT the
-canonical Frictionless specs. On editor mount, the app fetches
-the canonical schemas from `specs.frictionlessdata.io` with a 2 s
-timeout and replaces the bundle on success. If the fetch fails
-(offline, CORS, outage) users keep the placeholder validation —
-silent fallback. Update the placeholders when the canonical specs
-move.
+JSON Schema validation in the editor (#14) ships canonical-spec
+snapshots at `app/src/editor/schemas/{data-package,table-dialect,
+table-schema}.json`, captured at the v1.0 freeze (#55):
+
+- `data-package.json` — `https://specs.frictionlessdata.io/schemas/data-package.json`
+- `table-schema.json` — `https://specs.frictionlessdata.io/schemas/table-schema.json`
+- `table-dialect.json` — `https://datapackage.org/profiles/2.0/tabledialect.json`
+  (the Frictionless `specs.frictionlessdata.io` host returns 404
+  for `table-dialect.json`; `datapackage.org` is the canonical home
+  for v2 dialect.)
+
+On editor mount the app still attempts a runtime fetch against the
+same URLs with a 2 s timeout and replaces the bundle on success;
+on failure (offline, outage, dialect URL drift) the pinned bundle
+is the authoritative fallback. **Re-snapshot when bumping the
+upstream specs**, otherwise the live fetch and the bundled
+snapshot can drift.
 
 ### Monaco loaded from jsdelivr CDN
 
@@ -345,6 +352,15 @@ live at authoring time. If it goes away, swap to another
   and its transitive deps work; arbitrary user `pip install`s
   may not. Surfaced if a learner tries to extend a lesson
   with `import pandas`.
+- **The `python` shell command is script-only.** The mini-shell
+  recognises `python <script.py> [args...]` and runs the file
+  through the Pyodide worker (`runpy.run_path`, with `sys.argv`
+  set and the workspace cwd respected). Interactive forms
+  (`python`, `python -i`, `python -c "…"`) and stdin into the
+  script are intentionally out of scope; lesson 6 is the only
+  curriculum surface that uses `python` and only in the script
+  form. Errors during the script print a Python traceback to
+  the terminal and the command exits non-zero.
 - **No in-IDE note-taking.** The Notes & Observations
   sections are *author-side* (Principle II); the deployed app
   has no UI for a learner to capture their own notes.

@@ -34,10 +34,10 @@ const SCHEMAS: SchemaSlot[] = [
     liveUrl: 'https://specs.frictionlessdata.io/schemas/data-package.json',
   },
   {
-    uri: 'https://specs.frictionlessdata.io/schemas/table-dialect.json',
+    uri: 'https://datapackage.org/profiles/2.0/tabledialect.json',
     fileMatch: caseVariants('dialect.json'),
     schema: tableDialectSchema,
-    liveUrl: 'https://specs.frictionlessdata.io/schemas/table-dialect.json',
+    liveUrl: 'https://datapackage.org/profiles/2.0/tabledialect.json',
   },
   {
     uri: 'https://specs.frictionlessdata.io/schemas/table-schema.json',

@@ -216,8 +216,12 @@ test.describe('Load lesson files (#41)', () => {
     await expect(page.getByRole('dialog', { name: /Overwrite lesson files/ })).toHaveCount(0);
 
     // Open the file tree and verify the new files surface there.
+    // The tree uses `openByDefault={false}`, so click the `_sample`
+    // row to expand it before asserting on its children.
     await page.getByRole('button', { name: 'Files', exact: true }).click();
-    await expect(page.getByText('_sample').first()).toBeVisible();
+    const sampleRow = page.getByText('_sample').first();
+    await expect(sampleRow).toBeVisible();
+    await sampleRow.click();
     await expect(page.getByText('data.csv').first()).toBeVisible();
     await expect(page.getByText('README.md').first()).toBeVisible();
   });

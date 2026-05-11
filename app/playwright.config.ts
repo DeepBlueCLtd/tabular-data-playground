@@ -19,6 +19,16 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+    // Sandboxed dev environments behind a TLS-inspecting proxy
+    // (e.g. our agent sandbox) present a cert Chromium's bundled
+    // store does not trust, which makes the Pyodide CDN unreachable
+    // from inside the Worker. Opt in with PLAYWRIGHT_INSECURE_CERTS=1
+    // so the Pyodide-gated tests can actually run there. Real CI
+    // and the deployed site are unaffected.
+    ignoreHTTPSErrors: process.env.PLAYWRIGHT_INSECURE_CERTS === '1',
+    launchOptions: {
+      args: process.env.PLAYWRIGHT_INSECURE_CERTS === '1' ? ['--ignore-certificate-errors'] : [],
+    },
   },
   projects: [
     {

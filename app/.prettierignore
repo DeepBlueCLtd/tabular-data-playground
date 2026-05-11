@@ -6,3 +6,7 @@ pnpm-lock.yaml
 
 # E0 spike reference material — not part of v1 app scope (#4 spec.md §9)
 spikes
+
+# Canonical upstream JSON Schemas bundled for offline Monaco completion (#55).
+# Keep byte-for-byte equal to the source so "pinned canonical" stays honest.
+src/editor/schemas

@@ -14,7 +14,7 @@ import { tokenise, TokeniseError } from './tokenise';
  */
 export function useShellRunner() {
   const { vfs } = useVfs();
-  const { run } = usePyodide();
+  const { run, runPython } = usePyodide();
   const { flushAll } = useEditorTabs();
   const cwdRef = useRef<string>(SHELL_HOME);
 
@@ -53,6 +53,7 @@ export function useShellRunner() {
           vfs,
           cwd: cwdRef.current,
           bridge: (args, stdin) => run(args, stdin),
+          runPython: (code) => runPython(code),
           print: (text) => api.print(text),
           printErr: (text) => api.print(text),
         });
@@ -62,7 +63,7 @@ export function useShellRunner() {
         api.print(`shell: ${msg}\n`);
       }
     },
-    [vfs, run, flushAll],
+    [vfs, run, runPython, flushAll],
   );
 
   return { runLine };
