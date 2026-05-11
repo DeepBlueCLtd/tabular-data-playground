@@ -5,7 +5,7 @@ import { TerminalView } from '@/terminal/terminal';
 
 export function TerminalPanel() {
   const { status, running, cancel, reload } = usePyodide();
-  const { runLine } = useShellRunner();
+  const { runLine, complete } = useShellRunner();
   const ready = status === 'ready';
   const errored = status === 'error';
 
@@ -44,7 +44,7 @@ export function TerminalPanel() {
       </div>
       {ready ? (
         <div className="flex-1 overflow-hidden bg-background p-2">
-          <TerminalView onCommand={runLine} />
+          <TerminalView onCommand={runLine} onComplete={complete} />
         </div>
       ) : (
         <div className="flex flex-1 flex-col p-3 font-mono text-xs">

@@ -3,6 +3,7 @@ import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { useTheme } from '@/theme/use-theme';
+import type { CompletionResult } from '@/mini-shell/complete';
 import { LineEditor } from './line-editor';
 import {
   setTerminalRunning,
@@ -11,6 +12,7 @@ import {
 } from './terminal-submit-store';
 
 const PROMPT = '$ ';
+const BELL = '\x07';
 
 export interface TerminalApi {
   /** Print text to the terminal (auto-converts \n to \r\n). */
@@ -26,9 +28,17 @@ interface Props {
    * is ignored. The handler may print via the api passed in.
    */
   onCommand: (line: string, api: TerminalApi) => Promise<void>;
+  /**
+   * Optional Tab autocomplete callback. Called on every Tab
+   * keystroke (suppressed while busy) with the current line, the
+   * cursor position, and whether this is the second consecutive
+   * Tab on the same (line, cursor). Returns the desired completion
+   * action; the terminal applies it to the line editor and screen.
+   */
+  onComplete?: (line: string, cursor: number, doubleTab: boolean) => Promise<CompletionResult>;
 }
 
-export function TerminalView({ onCommand }: Props) {
+export function TerminalView({ onCommand, onComplete }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
 
@@ -39,6 +49,11 @@ export function TerminalView({ onCommand }: Props) {
   const busyRef = useRef(false);
   const onCommandRef = useRef(onCommand);
   onCommandRef.current = onCommand;
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+  // Snapshot of the line/cursor at the moment of the previous Tab.
+  // Used to detect double-Tab; cleared by any non-Tab keystroke.
+  const lastTabRef = useRef<{ line: string; cursor: number } | null>(null);
 
   // Mount terminal once.
   useEffect(() => {
@@ -87,6 +102,27 @@ export function TerminalView({ onCommand }: Props) {
 
     const onData = term.onData((data) => {
       if (busyRef.current) return;
+      // Tab is handled here (not in handleData) because completion
+      // needs access to the onComplete callback ref and double-Tab
+      // tracking state that live in this closure.
+      if (data === '\t') {
+        const line = lineRef.current.value;
+        const cursor = lineRef.current.cursor;
+        const last = lastTabRef.current;
+        const doubleTab = !!last && last.line === line && last.cursor === cursor;
+        lastTabRef.current = { line, cursor };
+        const cb = onCompleteRef.current;
+        if (!cb) {
+          term.write(BELL);
+          return;
+        }
+        void cb(line, cursor, doubleTab).then((result) =>
+          applyCompletion(term, lineRef.current, result),
+        );
+        return;
+      }
+      // Any non-Tab input invalidates the double-Tab snapshot.
+      lastTabRef.current = null;
       handleData(term, lineRef.current, data, async () => {
         const line = lineRef.current.pushHistory();
         lineRef.current.reset();
@@ -237,4 +273,27 @@ function rewriteLine(term: Terminal, line: string, cursor: number): void {
   // Move cursor to desired column relative to line end.
   const back = line.length - cursor;
   if (back > 0) term.write(`\x1b[${back}D`);
+}
+
+function applyCompletion(term: Terminal, line: LineEditor, result: CompletionResult): void {
+  if (result.kind === 'none') {
+    term.write(BELL);
+    return;
+  }
+  const before = line.value;
+  const next = before.slice(0, result.insertStart) + result.insert + before.slice(result.insertEnd);
+  if (result.kind === 'list') {
+    term.write(BELL);
+    // Print candidates on a new line, lay out by trailing-suffix.
+    const labels = result.candidates.map((c) => (c.kind === 'dir' ? `${c.name}/` : c.name));
+    term.write('\r\n' + labels.join('  ') + '\r\n');
+    line.setBuffer(next, result.newCursor);
+    rewriteLine(term, next, result.newCursor);
+    return;
+  }
+  if (result.kind === 'prefix') {
+    term.write(BELL);
+  }
+  line.setBuffer(next, result.newCursor);
+  rewriteLine(term, next, result.newCursor);
 }

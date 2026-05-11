@@ -399,3 +399,27 @@ live at authoring time. If it goes away, swap to another
   runs on a Web Worker, so Ctrl+C / Cancel terminate the
   worker (#31). This carve-out from the original
   cross-cutting list is now obsolete.
+
+## Post-v1.0 findings
+
+### Tab autocomplete — quoted/escaped tokens not supported
+
+The terminal's Tab autocomplete (#48) handles unquoted word
+tokens only. A token containing any single quote, double
+quote, or backslash short-circuits to "no candidates" and the
+bell rings — the completer does not attempt to parse
+quoting/escaping rules. The lessons do not use quoted file
+names, so this constraint does not bite the curriculum; it is
+recorded here for completeness should a future lesson
+introduce a quoted filename.
+
+### Tab autocomplete — failure feedback is silent
+
+The completer emits the ASCII bell character (`\a`, 0x07) on
+no-match, on ambiguous prefix expansion, and at the start of a
+double-Tab listing. xterm.js's default `bellStyle` is silent
+(no sound, no visual flash), so failure feedback is the
+*absence* of expansion rather than an audible/visual signal.
+This is a deliberate choice (classroom/demo context); enabling
+a bell sound would require shipping an audio asset and is out
+of scope.

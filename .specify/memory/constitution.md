@@ -1,25 +1,28 @@
 <!--
 SYNC IMPACT REPORT
-Version change: (none) → 1.0.0
-Bump rationale: Initial ratification. Principles distilled from spec.md
-(Frictionless Data Explorer — Software Specification, v0.5) and README.md.
-Modified principles: n/a (initial creation)
-Added sections:
-  - Core Principles (7 principles, drawn from spec.md §1, §6.5, §10, §11, §12)
-  - Technology Constraints (from spec.md §3–§5)
-  - Development Workflow & Quality Gates (from spec.md §10, §11, §13)
-  - Governance
+Version change: 1.0.0 → 2.0.0
+Bump rationale: Principle VI redefined incompatibly. The "Pin and Freeze"
+principle previously required the artefact to freeze at v1.0 with no
+further maintenance. The project is not in production and is still
+under active development; the v1.0 tag is a phasing milestone, not a
+freeze. Pinning for reproducibility of any tagged build is retained;
+the "no further work after v1.0" framing is removed. Backwards
+compatibility is now scoped explicitly to external Frictionless Data
+artefacts only.
+Modified principles:
+  - VI. Pin and Freeze → VI. Pin Versions, Iterate Forward
+Added sections: n/a
 Removed sections: n/a
 Templates requiring updates:
-  - .specify/templates/plan-template.md — no edit required; "Constitution Check"
-    is parameterised and reads this file at plan-time.
-  - .specify/templates/spec-template.md — no edit required; generic default.
-  - .specify/templates/tasks-template.md — no edit required; generic default.
-  - .specify/templates/checklist-template.md — no edit required; generic default.
-  - README.md — currently a one-liner ("Early experiments in support of tabular
-    data management"). Per spec.md §11 Phase 3 it is intentionally deferred to
-    project freeze. No action required at ratification; flagged for Phase 3.
-Follow-up TODOs: None at ratification.
+  - .specify/templates/plan-template.md — no edit required.
+  - .specify/templates/spec-template.md — no edit required.
+  - .specify/templates/tasks-template.md — no edit required.
+  - .specify/templates/checklist-template.md — no edit required.
+Companion edits in same commit:
+  - spec.md §11 Phase 3 — drop "frozen as-is" disposition.
+  - spec.md §13 — last DoD bullet softened from "frozen as a dated
+    reference" to a neutral milestone.
+Follow-up TODOs: None.
 -->
 
 # Tabular Data Playground Constitution
@@ -92,18 +95,26 @@ phase MUST NOT be declared complete on the basis of in-flight work alone.
 Rationale: Solo author, evening pace, real risk of momentum loss; the
 phasing is the mitigation (spec.md §10 R9, §11).
 
-### VI. Pin and Freeze
+### VI. Pin Versions, Iterate Forward
 
 All external versions — Frictionless, Pyodide, JSON Schemas (Data Package /
 Table Schema / Dialect), and npm dependencies via committed lockfile — MUST
-be pinned at v1.0 freeze and recorded in the README. After v1.0 there are
-no automated upgrade PRs and no scheduled maintenance. The repository is a
-**dated reference**, not a living product. Reproducibility of the v1.0 build
-takes precedence over staying current.
+be pinned and recorded in the README so that any tagged build is
+reproducible. Backwards compatibility is **not** a project goal except
+where it concerns external Frictionless Data artefacts (datapackages,
+schemas, dialects) that the artefact reads or writes: those MUST remain
+compliant with the pinned Frictionless / JSON Schema versions in use.
 
-Rationale: The artefact's value is "this is what we found in 2026"; drifting
-under maintenance dilutes that statement (spec.md §11 Phase 3, decisions
-#11, #35).
+The `v1.0` tag is a phasing milestone (Principle V), not a freeze.
+Development continues past it. Adopting newer standards is encouraged
+when they improve evaluation faithfulness; when a standard is adopted,
+in-tree files MUST migrate to the adopted standard rather than carrying
+historical formats.
+
+Rationale: Tagged reproducibility supports the artefact's "this is what
+we found at point X" value without locking out improvements to the
+tooling around it. Production-style maintenance constraints are not in
+scope because the project is not in production.
 
 ### VII. Document Limitations Honestly
 
@@ -209,8 +220,9 @@ amended to align.
 gates above. Violations MUST either be removed or justified in the plan's
 Complexity Tracking section before `/speckit-tasks` runs.
 
-**Project lifecycle**: at v1.0 the artefact freezes (Principle VI). This
-constitution freezes with it. Post-freeze edits, if any, are limited to
-factual corrections of the dated record.
+**Project lifecycle**: development continues past the `v1.0` tag
+(Principle VI). Tagged builds are reproducible via pinned versions, but
+the constitution and the codebase continue to evolve while the project
+is in its pre-production research phase.
 
-**Version**: 1.0.0 | **Ratified**: 2026-05-08 | **Last Amended**: 2026-05-08
+**Version**: 2.0.0 | **Ratified**: 2026-05-08 | **Last Amended**: 2026-05-11

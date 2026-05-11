@@ -1,9 +1,11 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { useEditorTabs } from '@/editor/use-editor-tabs';
 import { useVfs } from '@/fs/use-vfs';
 import { usePyodide } from '@/pyodide/use-pyodide';
 import type { TerminalApi } from '@/terminal/terminal';
-import { executePipeline, SHELL_HOME } from './execute';
+import { BUILTINS } from './builtins';
+import { complete as completeFn, type CompletionResult } from './complete';
+import { EXTERNAL_COMMANDS, executePipeline, SHELL_HOME } from './execute';
 import { parse, ParseError } from './parse';
 import { tokenise, TokeniseError } from './tokenise';
 
@@ -66,5 +68,22 @@ export function useShellRunner() {
     [vfs, run, runPython, flushAll],
   );
 
-  return { runLine };
+  const commandNames = useMemo(() => [...Object.keys(BUILTINS), ...EXTERNAL_COMMANDS], []);
+
+  const complete = useCallback(
+    async (line: string, cursor: number, doubleTab: boolean): Promise<CompletionResult> => {
+      if (!vfs) return { kind: 'none', bell: true };
+      return completeFn({
+        line,
+        cursor,
+        cwd: cwdRef.current,
+        vfs,
+        commandNames,
+        doubleTab,
+      });
+    },
+    [vfs, commandNames],
+  );
+
+  return { runLine, complete };
 }
