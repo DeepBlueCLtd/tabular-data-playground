@@ -68,10 +68,7 @@ export function useShellRunner() {
     [vfs, run, runPython, flushAll],
   );
 
-  const commandNames = useMemo(
-    () => [...Object.keys(BUILTINS), ...EXTERNAL_COMMANDS],
-    [],
-  );
+  const commandNames = useMemo(() => [...Object.keys(BUILTINS), ...EXTERNAL_COMMANDS], []);
 
   const complete = useCallback(
     async (line: string, cursor: number, doubleTab: boolean): Promise<CompletionResult> => {

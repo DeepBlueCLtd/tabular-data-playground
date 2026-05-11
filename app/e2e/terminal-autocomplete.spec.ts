@@ -108,9 +108,7 @@ test.describe('terminal tab autocomplete', () => {
   });
 
   // US3: mid-line and busy-guard.
-  test('US3 — Tab while terminal busy is a no-op (no buffer change, no bell)', async ({
-    page,
-  }) => {
+  test('US3 — Tab while terminal busy is a no-op (no buffer change, no bell)', async ({ page }) => {
     test.setTimeout(PYODIDE_BOOT_TIMEOUT + 60_000);
     await page.goto('/');
     await awaitPyodideOrSkip(page);

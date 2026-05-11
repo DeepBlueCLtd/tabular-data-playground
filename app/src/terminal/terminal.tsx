@@ -35,11 +35,7 @@ interface Props {
    * Tab on the same (line, cursor). Returns the desired completion
    * action; the terminal applies it to the line editor and screen.
    */
-  onComplete?: (
-    line: string,
-    cursor: number,
-    doubleTab: boolean,
-  ) => Promise<CompletionResult>;
+  onComplete?: (line: string, cursor: number, doubleTab: boolean) => Promise<CompletionResult>;
 }
 
 export function TerminalView({ onCommand, onComplete }: Props) {
@@ -279,18 +275,13 @@ function rewriteLine(term: Terminal, line: string, cursor: number): void {
   if (back > 0) term.write(`\x1b[${back}D`);
 }
 
-function applyCompletion(
-  term: Terminal,
-  line: LineEditor,
-  result: CompletionResult,
-): void {
+function applyCompletion(term: Terminal, line: LineEditor, result: CompletionResult): void {
   if (result.kind === 'none') {
     term.write(BELL);
     return;
   }
   const before = line.value;
-  const next =
-    before.slice(0, result.insertStart) + result.insert + before.slice(result.insertEnd);
+  const next = before.slice(0, result.insertStart) + result.insert + before.slice(result.insertEnd);
   if (result.kind === 'list') {
     term.write(BELL);
     // Print candidates on a new line, lay out by trailing-suffix.
