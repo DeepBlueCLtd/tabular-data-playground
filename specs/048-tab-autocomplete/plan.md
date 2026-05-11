@@ -41,10 +41,7 @@ that handles other edits.
 1. **Research-first** — *justified, see Complexity Tracking.* This is a
    usability affordance, not a Frictionless evaluation. It serves
    evaluation indirectly by reducing typing friction in the lessons that
-   *do* evaluate Frictionless. The artefact has reached v1.0 freeze
-   (commit `f1008cc`), so this is technically a post-freeze addition
-   under Principle VI. Logged in Complexity Tracking; user explicitly
-   requested.
+   *do* evaluate Frictionless.
 2. **Notes-section** — N/A. Not a lesson.
 3. **Destruction** — ✅ pass. No flow overwrites or deletes content.
    Completion only reads.
@@ -109,8 +106,15 @@ terminal layer to mini-shell semantics.
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|--------------------------------------|
-| **Post-freeze feature add** (Principle VI: "no scheduled maintenance after v1.0") | User explicitly requested it; the v1.0 artefact is being used as a teaching demonstrator and the typing friction is a real pedagogical drag during walkthroughs. The completion logic is self-contained (one new pure module + ~30-line wiring change) so it does not endanger the pinned-and-frozen evaluation surface. | Doing nothing was offered to the user in the exploratory exchange; they chose to proceed. Treating this as a forked "v1.1 preview" branch would add ceremony without changing the code change. The artefact remains the dated reference at the v1.0 tag; this branch advances `main` past freeze for a quality-of-life improvement. |
 | **Gate 1 (Research-first) borderline** | Tab completion does not directly evaluate Frictionless. It does reduce typing friction in every lesson that demonstrates Frictionless, so it serves evaluation indirectly. | Building a Frictionless-flavoured completion (e.g., `frictionless describe <Tab>` knows about table schemas) would over-engineer for one demo. Generic file/command completion is the standard shell behaviour learners expect. |
+
+Note on Principle VI: although a `v1.0` tag exists in git, the project
+is **not** in production and is not subject to the post-freeze ban on
+new features. The tag marks a milestone in the demonstrability phasing
+(Principle V), not a maintenance-mode boundary. Backwards compatibility
+is not a constraint of this project except where it concerns external
+Frictionless Data artefacts. This note is in the plan rather than as a
+gate violation because it does not affect the design of this feature.
 
 ## Phase 0 — Research
 
