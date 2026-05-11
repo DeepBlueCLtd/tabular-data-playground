@@ -11,6 +11,8 @@ export interface RunRequest {
   id: string;
   args: string[];
   stdin?: string;
+  /** Working directory for the CLI invocation. Defaults to /workspace. */
+  cwd?: string;
 }
 
 export interface RunPythonRequest {

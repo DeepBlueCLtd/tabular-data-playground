@@ -157,7 +157,7 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
   }, [spawnWorker]);
 
   const run = useCallback(
-    (args: string[], stdin?: string): Promise<RunResult> => {
+    (args: string[], stdin?: string, cwd?: string): Promise<RunResult> => {
       const promise = schedule(
         () =>
           new Promise<RunResult>((resolve, reject) => {
@@ -173,7 +173,7 @@ export function PyodideProvider({ children }: { children: ReactNode }) {
               resolve: resolve as (v: RunResult | RunPythonResult) => void,
               reject,
             });
-            worker.postMessage({ type: 'run', id, args, stdin });
+            worker.postMessage({ type: 'run', id, args, stdin, cwd });
           }),
       );
       const finalize = () => bumpRunning(-1);

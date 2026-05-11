@@ -22,7 +22,7 @@ export interface ExecuteCtx {
   vfs: Vfs;
   /** Current working directory at start; may be updated via cwdAfter. */
   cwd: string;
-  bridge: (args: string[], stdin?: string) => Promise<RunResult>;
+  bridge: (args: string[], stdin?: string, cwd?: string) => Promise<RunResult>;
   /** Run a snippet of Python in the Pyodide worker. */
   runPython: (code: string) => Promise<RunPythonBridgeResult>;
   /** Print stdout chunk to the terminal (no extra newline). */
@@ -100,7 +100,7 @@ async function runStage(
   if (head === 'frictionless') {
     const stdinStr = stdin.length > 0 ? dec.decode(stdin) : undefined;
     try {
-      const result = await ctx.bridge(argv.slice(1), stdinStr);
+      const result = await ctx.bridge(argv.slice(1), stdinStr, ctx.cwd);
       return {
         stdout: enc.encode(result.stdout),
         stderr: result.stderr,

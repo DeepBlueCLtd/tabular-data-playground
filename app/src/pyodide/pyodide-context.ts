@@ -26,7 +26,7 @@ export interface PyodideContextValue {
   /** Reload the runtime. No-op stub until #30 implements it. */
   reload: () => void;
   /** Invoke the frictionless CLI via the Pyodide bridge. Rejects before ready. */
-  run: (args: string[], stdin?: string) => Promise<RunResult>;
+  run: (args: string[], stdin?: string, cwd?: string) => Promise<RunResult>;
   /** Escape hatch — evaluate raw Python. Rejects before ready. */
   runPython: (code: string) => Promise<RunPythonResult>;
   /** Virtual FS over the worker's IDBFS. Null until status === 'ready'. */
