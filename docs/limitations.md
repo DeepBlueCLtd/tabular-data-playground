@@ -222,6 +222,32 @@ rather than fail. The deployed-site verification at epic close
 the authoritative gate; CI on a normal runner reaches `Python: ready`
 in well under the 180 s budget.
 
+### Chrome with enterprise DLP extensions strips WebAssembly from Workers
+
+On managed-Chrome profiles (those showing
+`ExtensionInstallBlocklist: ["*"]` plus an `ExtensionInstallAllowlist`
+in `chrome://policy`), a force-allowed corporate security/DLP
+extension can intercept Web Worker creation and remove the
+`WebAssembly` global from the worker scope, while leaving it
+untouched on the main thread. Pyodide loads in a worker
+(Measurement C), so it fails to start and `NoWasmScreen` (#19)
+catches the case. Symptoms:
+
+- The main-thread `typeof WebAssembly` returns `"object"` (so the
+  user reasonably assumes WASM is available), but a worker
+  created from a Blob URL reports `undefined` when asked the same
+  thing.
+- The same machine works in Microsoft Edge, because the Chrome
+  ADMX policies don't apply to Edge and most orgs manage one or
+  the other, not both. Firefox is similarly unaffected.
+
+There is no code-side workaround. The product can't unstrip
+`WebAssembly` once an extension removes it, and moving Pyodide
+to the main thread to dodge the stripping would lose the
+non-blocking UI Measurement C secured. The accepted answer is
+the recommendation in `NoWasmScreen`: use Edge / Firefox, or ask
+IT to allowlist this origin for the offending extension.
+
 ### Load lesson files — no rollback, "any existing file" prompts
 
 The **Load lesson files** action (#41) copies
