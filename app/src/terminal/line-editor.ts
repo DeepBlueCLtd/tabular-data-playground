@@ -29,6 +29,14 @@ export class LineEditor {
     this.savedCurrent = '';
   }
 
+  /** Overwrite the current buffer and cursor (e.g. after Tab
+   *  completion). History navigation state is intentionally
+   *  preserved: a completion is not a history move. */
+  setBuffer(buffer: string, cursor: number): void {
+    const c = Math.max(0, Math.min(cursor, buffer.length));
+    this.state = { buffer, cursor: c };
+  }
+
   insert(text: string): void {
     const { buffer, cursor } = this.state;
     this.state = {

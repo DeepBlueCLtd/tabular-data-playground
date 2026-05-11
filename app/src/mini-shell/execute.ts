@@ -4,6 +4,13 @@ import { BUILTINS, isBuiltin, type BuiltinResult } from './builtins';
 import { resolveCwd } from './path-util';
 import type { Pipeline, PipelineStage } from './parse';
 
+export const EXTERNAL_COMMANDS = ['frictionless', 'python'] as const;
+export type ExternalCommand = (typeof EXTERNAL_COMMANDS)[number];
+
+function isExternalCommand(name: string): name is ExternalCommand {
+  return (EXTERNAL_COMMANDS as readonly string[]).includes(name);
+}
+
 export interface RunResult {
   stdout: string;
   stderr: string;
@@ -97,22 +104,25 @@ async function runStage(
     }
     return fn({ argv, stdin, vfs: ctx.vfs, cwd: ctx.cwd });
   }
-  if (head === 'frictionless') {
-    const stdinStr = stdin.length > 0 ? dec.decode(stdin) : undefined;
-    try {
-      const result = await ctx.bridge(argv.slice(1), stdinStr, ctx.cwd);
-      return {
-        stdout: enc.encode(result.stdout),
-        stderr: result.stderr,
-        exitCode: result.exitCode,
-      };
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      return { stdout: EMPTY, stderr: `frictionless: ${msg}\n`, exitCode: 1 };
+  if (isExternalCommand(head)) {
+    switch (head) {
+      case 'frictionless': {
+        const stdinStr = stdin.length > 0 ? dec.decode(stdin) : undefined;
+        try {
+          const result = await ctx.bridge(argv.slice(1), stdinStr, ctx.cwd);
+          return {
+            stdout: enc.encode(result.stdout),
+            stderr: result.stderr,
+            exitCode: result.exitCode,
+          };
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          return { stdout: EMPTY, stderr: `frictionless: ${msg}\n`, exitCode: 1 };
+        }
+      }
+      case 'python':
+        return runPythonStage(argv, ctx);
     }
-  }
-  if (head === 'python') {
-    return runPythonStage(argv, ctx);
   }
   return { stdout: EMPTY, stderr: `${head}: command not found\n`, exitCode: 127 };
 }

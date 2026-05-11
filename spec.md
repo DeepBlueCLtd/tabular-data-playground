@@ -170,7 +170,8 @@ This is the most novel piece of engineering and the area most likely to bite. Th
 - `python script.py` and `python -c "…"` need to run inside the same Pyodide instance, sharing or isolating namespace per the user’s expectation. Default: each invocation gets a fresh global namespace. Document.
 - Redirection to a file means *writing into the virtual FS*, then making sure the editor refreshes any open tab pointing at that file (file-watcher pattern).
 - Pipe ordering: in real bash, all pipeline stages run concurrently. In our model they may end up serialised through Pyodide. Either accept that (output between stages is buffered), or drive Pyodide on a worker thread and stream genuinely. **Recommendation: serialise + buffer for v1**, mark as a known limitation, revisit if it becomes painful.
-- Rejected for v1: `&&`, `||`, `;` chaining; backgrounding; signal handling; tab completion. These would significantly enlarge the parser. If we discover lessons depend on `&&`, add it.
+- Rejected for v1: `&&`, `||`, `;` chaining; backgrounding; signal handling. These would significantly enlarge the parser. If we discover lessons depend on `&&`, add it.
+- Tab completion was originally rejected for v1 but added in iteration 048 once the rest of the shell had stabilised; the completer is a separate module (`app/src/mini-shell/complete.ts`) and does not touch the parser.
 
 -----
 
