@@ -255,3 +255,59 @@ test.describe('Load lesson files (#41)', () => {
     await expect(page.getByRole('button', { name: /^Load lesson files$/ })).toBeEnabled();
   });
 });
+
+// Regression: spec.md §11 E1 success criterion — `frictionless
+// describe` against the seeded lesson 1 CSV must produce real
+// Frictionless output. Two silent defects shipped to production
+// because no test exercised this path:
+//   1. CLI_WRAPPER used `from js import __cli_args` (JS globals)
+//      while the host called pyodide.globals.set (Python globals).
+//   2. The worker hard-coded os.chdir('/workspace'), so a shell
+//      `cd <slug>` did not carry into the CLI invocation.
+test.describe('Frictionless CLI end-to-end (spec.md §11 E1)', () => {
+  test('cd into lesson dir and `frictionless describe books.csv` returns Tables', async ({
+    page,
+  }) => {
+    test.setTimeout(PYODIDE_BOOT_TIMEOUT + 60_000);
+    await page.goto('/');
+    // Lesson 1 (`01-describe`) ships in the production set.
+    await page.locator('[data-lesson-slug="01-describe"]').click();
+    await awaitPyodideOrSkip(page);
+
+    await page.getByRole('button', { name: /^Load lesson files$/ }).click();
+    // Brief settle for the file copy.
+    await page.waitForTimeout(500);
+
+    // Click Run on the `cd 01-describe` block, then on the
+    // `frictionless describe books.csv` block (no flags).
+    const cdBlock = page
+      .locator('.lesson-code-block:has(code.language-bash)')
+      .filter({ hasText: 'cd 01-describe' })
+      .first();
+    await cdBlock.getByRole('button', { name: 'Run' }).click();
+    await page.waitForTimeout(500);
+
+    // The plain `frictionless describe books.csv` block is the
+    // first one in the lesson; later blocks add --json / --stats
+    // / --type. Match the first bash block whose text contains
+    // the command and skip any with a flag.
+    const describeBlock = page
+      .locator('.lesson-code-block:has(code.language-bash)')
+      .filter({ hasText: 'frictionless describe books.csv' })
+      .filter({ hasNotText: '--' })
+      .first();
+    await describeBlock.scrollIntoViewIfNeeded();
+    await describeBlock.getByRole('button', { name: 'Run' }).click();
+
+    // Frictionless prints a Tables block with the inferred column
+    // types. We assert on stable bits of that output rather than
+    // exact box-drawing characters.
+    const terminal = page.locator('section', { hasText: 'TERMINAL' });
+    await expect(terminal).toContainText('books', { timeout: 30_000 });
+    await expect(terminal).toContainText('published_year', { timeout: 30_000 });
+    await expect(terminal).toContainText('integer', { timeout: 30_000 });
+    await expect(terminal).toContainText('boolean', { timeout: 30_000 });
+    // No ImportError / cli_args / no-such-file failure modes:
+    await expect(terminal).not.toContainText(/ImportError|__cli_args|No such file or directory/);
+  });
+});
