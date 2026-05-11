@@ -1,0 +1,42 @@
+{
+  "name": "library",
+  "title": "Small Library Catalogue (sample)",
+  "description": "Companion data package for lesson 8 of the Frictionless Data Explorer. Self-hosted on the same Pages site as the IDE itself.",
+  "licenses": [{ "name": "CC0-1.0", "title": "Creative Commons Zero v1.0 Universal" }],
+  "homepage": "https://github.com/DeepBlueCLtd/tabular-data-playground",
+  "version": "1.0.0",
+  "resources": [
+    {
+      "name": "authors",
+      "path": "authors.csv",
+      "format": "csv",
+      "schema": {
+        "fields": [
+          { "name": "id", "type": "integer", "constraints": { "required": true, "unique": true } },
+          { "name": "name", "type": "string", "constraints": { "required": true } },
+          { "name": "country", "type": "string" }
+        ],
+        "primaryKey": "id"
+      }
+    },
+    {
+      "name": "books",
+      "path": "books.csv",
+      "format": "csv",
+      "schema": {
+        "fields": [
+          { "name": "id", "type": "integer", "constraints": { "required": true, "unique": true } },
+          { "name": "title", "type": "string", "constraints": { "required": true } },
+          { "name": "author_id", "type": "integer", "constraints": { "required": true } },
+          { "name": "published_year", "type": "year" },
+          { "name": "pages", "type": "integer", "constraints": { "minimum": 1 } },
+          { "name": "in_print", "type": "boolean", "constraints": { "required": true } }
+        ],
+        "primaryKey": "id",
+        "foreignKeys": [
+          { "fields": "author_id", "reference": { "resource": "authors", "fields": "id" } }
+        ]
+      }
+    }
+  ]
+}
