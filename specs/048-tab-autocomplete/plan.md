@@ -108,14 +108,6 @@ terminal layer to mini-shell semantics.
 |-----------|------------|--------------------------------------|
 | **Gate 1 (Research-first) borderline** | Tab completion does not directly evaluate Frictionless. It does reduce typing friction in every lesson that demonstrates Frictionless, so it serves evaluation indirectly. | Building a Frictionless-flavoured completion (e.g., `frictionless describe <Tab>` knows about table schemas) would over-engineer for one demo. Generic file/command completion is the standard shell behaviour learners expect. |
 
-Note on Principle VI: although a `v1.0` tag exists in git, the project
-is **not** in production and is not subject to the post-freeze ban on
-new features. The tag marks a milestone in the demonstrability phasing
-(Principle V), not a maintenance-mode boundary. Backwards compatibility
-is not a constraint of this project except where it concerns external
-Frictionless Data artefacts. This note is in the plan rather than as a
-gate violation because it does not affect the design of this feature.
-
 ## Phase 0 — Research
 
 Output: `research.md`. Key decisions captured below; full rationale in
