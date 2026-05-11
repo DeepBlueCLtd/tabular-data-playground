@@ -165,13 +165,15 @@ function installStdin(py: MinimalPyodide, stdin: string | undefined) {
 
 const CLI_WRAPPER = `
 import sys, runpy, traceback, os
-from js import __cli_args
+# __cli_args and __cli_cwd are injected into Python globals by the
+# host via pyodide.globals.set before each runPythonAsync call.
 _args = [str(a) for a in list(__cli_args)]
+_cwd = str(__cli_cwd)
 _old_argv = sys.argv
 sys.argv = ['frictionless'] + _args
-# Stay in /workspace so relative paths resolve against the user's files.
+# Honour the shell's cwd so 'cd lesson/' before the CLI works.
 try:
-    os.chdir('/workspace')
+    os.chdir(_cwd)
 except Exception:
     pass
 try:
@@ -208,6 +210,7 @@ async function runCli(req: RunRequest) {
   const cap = installCapture(pyodide);
   installStdin(pyodide, req.stdin);
   pyodide.globals.set('__cli_args', req.args);
+  pyodide.globals.set('__cli_cwd', req.cwd ?? WORKSPACE);
   let exitCode = 1;
   try {
     const result = await pyodide.runPythonAsync(CLI_WRAPPER);
@@ -219,6 +222,7 @@ async function runCli(req: RunRequest) {
   } finally {
     try {
       pyodide.globals.delete('__cli_args');
+      pyodide.globals.delete('__cli_cwd');
     } catch {
       // ignore
     }

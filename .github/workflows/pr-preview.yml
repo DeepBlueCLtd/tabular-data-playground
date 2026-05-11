@@ -1,0 +1,140 @@
+name: PR preview deploy
+
+# Builds each PR with a PR-specific Vite base path and publishes it
+# under `/pr-preview/pr-<N>/` of the gh-pages branch. Posts (or
+# updates) a single sticky comment on the PR with the preview URL.
+# Removes the directory and the comment when the PR closes.
+#
+# The action only runs for PRs from branches in the same repo
+# (skips forks) because secrets aren't available to fork-triggered
+# workflow runs and the deploy step needs `contents: write`.
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+concurrency:
+  group: pr-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build PR ${{ github.event.pull_request.number }} preview
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    outputs:
+      pr-number: ${{ steps.meta.outputs.pr }}
+    steps:
+      - name: Check out PR head
+        uses: actions/checkout@v4
+
+      - name: Resolve PR metadata
+        id: meta
+        run: echo "pr=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: app/package.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+
+      - name: Install dependencies (frozen)
+        run: pnpm install --frozen-lockfile
+
+      - name: Build with PR-scoped base path
+        env:
+          VITE_BASE_PATH: /tabular-data-playground/pr-preview/pr-${{ github.event.pull_request.number }}/
+        run: pnpm run build
+
+      - name: Upload built site for the deploy job
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-preview-${{ github.event.pull_request.number }}
+          path: app/dist
+          retention-days: 7
+
+  deploy:
+    name: Publish PR ${{ github.event.pull_request.number }} to gh-pages
+    needs: build
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out gh-pages source for cleanup tooling
+        uses: actions/checkout@v4
+
+      - name: Download built site
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-preview-${{ github.event.pull_request.number }}
+          path: dist
+
+      - name: Publish to gh-pages /pr-preview/pr-N/
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: dist
+          publish_branch: gh-pages
+          destination_dir: pr-preview/pr-${{ github.event.pull_request.number }}
+          keep_files: true
+          commit_message: 'preview: PR #${{ github.event.pull_request.number }} @ ${{ github.event.pull_request.head.sha }}'
+
+      - name: Comment preview URL on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: pr-preview-url
+          message: |
+            ### Preview deploy ready
+
+            **URL**: https://${{ github.repository_owner }}.github.io/tabular-data-playground/pr-preview/pr-${{ github.event.pull_request.number }}/
+
+            Built from `${{ github.event.pull_request.head.sha }}`. Updates on every push to this PR; removed when the PR closes.
+
+  cleanup:
+    name: Remove PR ${{ github.event.pull_request.number }} preview
+    if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+
+      - name: Remove preview directory and push
+        run: |
+          set -e
+          DIR="pr-preview/pr-${{ github.event.pull_request.number }}"
+          if [ -d "$DIR" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git rm -rf "$DIR"
+            git commit -m "preview: remove PR #${{ github.event.pull_request.number }} (closed)"
+            git push origin gh-pages
+          else
+            echo "No preview dir to clean up."
+          fi
+
+      - name: Update sticky comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: pr-preview-url
+          message: |
+            ### Preview deploy removed
+
+            The preview for this PR has been deleted now that the PR is closed.
