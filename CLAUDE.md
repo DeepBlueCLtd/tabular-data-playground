@@ -1,198 +1,167 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan:
-`specs/048-tab-autocomplete/plan.md`.
+shell commands, and other important information, read the spec at
+`spec.md` and the constitution at `.specify/memory/constitution.md`.
+Active per-item plans live under `specs/<NNN-slug>/plan.md`.
 <!-- SPECKIT END -->
 
-# Spec-Driven Development
+# Spec-Driven Development on a Project Board
 
-This repository uses [Spec Kit](https://github.com/github/spec-kit) (the
-`speckit-*` skills) to drive every change through a written spec, plan, and
-task list before any code is touched. The product spec is `spec.md`; the
-governing rules are in `.specify/memory/constitution.md`; the prioritised
-work list is `backlog.md`.
+This repository drives every change through a written spec, plan, and
+task list before any code is touched, using the
+[Spec Kit](https://github.com/github/spec-kit) `speckit-*` skills.
+
+Work is **tracked on a GitHub Project board**, not in a flat-file
+backlog. The methodology — Status state machine, Phase decision table,
+two-branch-per-issue convention, polling orchestrator — is documented
+at <https://github.com/DeepBlueCLtd/backlog-navigator> (`METHODOLOGY.md`
+and `docs/adopt-methodology.md`). The cutover from the previous
+`backlog.md` file is recorded in `docs/migration/to-project-board.md`;
+the archived backlog lives at `docs/history/backlog.md.archived`.
 
 ## Authoritative documents
 
 - `spec.md` — **the** product specification. Where it disagrees with the
   constitution, `spec.md` wins and the constitution is amended to align.
-- `.specify/memory/constitution.md` — non-negotiable principles, technology
-  constraints, and per-feature gates. Every plan is checked against it.
-- `backlog.md` — epics (E0–E3) and ordered backlog items, each with a
-  status column (`proposed → specified → planned → tasked → implementing
-  → complete`). This is the canonical view of what work exists and where
-  each item is in the SDD cycle.
-- `specs/<feature>/` — per-feature artefacts created by the speckit skills:
-  `spec.md`, `plan.md`, `tasks.md`, optional `checklists/`.
+- `.specify/memory/constitution.md` — non-negotiable principles,
+  technology constraints, and per-feature gates. Every plan is checked
+  against it.
+- **The GitHub Project board** — the canonical view of what work exists
+  and where each item is in the SDD cycle. Replaces the old `backlog.md`.
+- `specs/<NNN-slug>/` — per-item artefacts produced by the speckit
+  skills: `spec.md`, `plan.md`, `tasks.md`, optional `checklists/`.
 
-## The per-item cycle
+## The two state machines
 
-Every backlog item flows through the same sequence of skills. Do **not**
-skip steps; the gates are how the constitution stays enforced.
+Work moves through **two orthogonal state machines** on the Project
+board. Status is dragged by a maintainer; Phase is advanced by the
+orchestrator.
 
-1. `/speckit-git-feature` — create a feature branch (sequential numbering,
-   per `.specify/init-options.json`). **Skip when working an epic in one
-   pass** — the epic branch is already in place; see "Working a whole
-   epic in one pass" below.
-2. `/speckit-specify` — turn the backlog row into a feature spec under
-   `specs/<NNN-slug>/spec.md`. Status → `specified`.
-3. `/speckit-clarify` *(optional but preferred)* — resolve underspecified
-   areas before planning. Skip only when the item is genuinely
-   self-contained.
-4. `/speckit-plan` — produce `plan.md` and run the **Constitution Check**
-   (Research-first, Notes-section, Destruction, Backend, Pinning,
-   Limitations gates). Status → `planned`. Any unjustified violation
-   blocks `/speckit-tasks`.
-5. `/speckit-tasks` — generate `tasks.md`, dependency-ordered. Status →
-   `tasked`.
-6. `/speckit-analyze` — non-destructive cross-artefact consistency check
-   across `spec.md`, `plan.md`, `tasks.md`. Run before implementing.
-7. `/speckit-checklist` *(optional)* — generate a feature-specific
-   checklist when the item touches a destructive flow, a new dependency,
-   or a sharp edge.
-8. `/speckit-implement` — execute `tasks.md`. Status → `implementing`.
-   In single-item mode, status moves to `complete` when the branch is
-   merged and `spec.md` §13 is met. In epic mode, status moves to
-   `complete` when the item's tasks all pass on the epic branch; the
-   epic PR carries the merge.
-9. Update `backlog.md`: bump the row's status and `Updated` date; add
-   strikethrough on completion. Commit on the active branch (epic
-   branch in epic mode).
+### Status (maintainer-controlled)
 
-The wrapped workflow `.specify/workflows/speckit/workflow.yml` runs
-specify → plan → tasks → implement with review gates between specify and
-plan, and between plan and tasks. Use it for single items when you want
-the gates enforced automatically.
+`Triage → In Design → Ready → Doing → Done`
 
-## Constitution gates (recap)
+| Status | Meaning | Who moves it |
+|--------|---------|--------------|
+| Triage | New issue, awaiting Category/Complexity/V/M/A | Auto on issue open; maintainer scores and drags out |
+| In Design | Spec/plan/tasks being authored by the orchestrator | Maintainer drags in; drags to Ready when design PR merges |
+| Ready | Designed, awaiting capacity | Maintainer |
+| Doing | Implementation in progress | Maintainer drags in to trigger `/speckit-implement` |
+| Done | Issue closed | Auto when issue closes |
 
-`/speckit-plan` will fail loudly if any gate is violated without
-justification:
+### Phase (orchestrator-controlled)
 
-1. Research-first — does this serve evaluating Frictionless?
-2. Notes-section — every lesson template carries a Notes & Observations
-   section.
-3. Destruction — any overwrite/delete flow needs modal confirmation.
-4. Backend — no servers, accounts, or telemetry.
-5. Pinning — new external deps land pinned and recorded.
-6. Limitations — new sharp edges go into `docs/limitations.md` in the
-   same change.
+`(empty) → Spec drafting → Plan drafting → Tasks drafting →
+(Decomposing, epics only) → Designed → Implementing`
 
-If a gate flags a real concern, fix the spec or plan; if it flags a
+The orchestrator (`/loop 15m /backlog-poll`) advances Phase one step per
+tick per item, keying off the Phase field via the Project API (never
+the working tree):
+
+| Status | Current Phase | Orchestrator action |
+|--------|---------------|---------------------|
+| In Design | (empty) | Create design branch `<NNN>-<slug>`; run `/speckit-specify`; open design PR; Phase = Spec drafting |
+| In Design | Spec drafting | If `[NEEDS CLARIFICATION]` markers exist, run `/speckit-clarify`; else run `/speckit-plan`; Phase = Plan drafting |
+| In Design | Plan drafting | Run `/speckit-tasks`; Phase = Tasks drafting |
+| In Design | Tasks drafting | Non-epic: Phase = Designed. Epic: run `/speckit-taskstoissues`; Phase = Decomposing |
+| In Design | Decomposing | Verify sub-issues filed; Phase = Designed |
+| In Design | Designed | Halt; notify maintainer that design is done |
+| Doing | Designed | Create impl branch `<NNN>-<slug>-impl`; run `/speckit-implement`; open implementation PR with `Closes #NNN`; Phase = Implementing |
+| Doing | Implementing | Hold; wait for PR merge → issue closes → Status → Done |
+
+A maintainer may invoke any `speckit-*` skill manually; the orchestrator
+resumes from whatever the Phase field shows.
+
+## Branch convention
+
+**Two branches per issue, two PRs per issue:**
+
+1. **Design branch** `<NNN>-<slug>` — created on the first
+   `/speckit-specify` run; accumulates `spec.md`, `plan.md`, `tasks.md`
+   commits under `specs/<NNN-slug>/`. Single design PR opens and stays
+   open through iterations; merges to `main` when Phase = Designed and
+   the maintainer approves.
+2. **Implementation branch** `<NNN>-<slug>-impl` — created when Status
+   moves to Doing. Implementation PR opens with `Closes #NNN`; merges
+   after code review.
+
+Separation enables independent review cycles for design intent and code.
+**Do not** combine multiple issues onto one branch; that was the old
+epic-mode batching pattern and is incompatible with the per-issue state
+machine. Real epics use GitHub sub-issues instead — see "Epics and
+sub-issues" below.
+
+## Constitution gates
+
+`/speckit-plan` runs the Constitution Check and fails loudly if any
+gate is violated without justification:
+
+1. **Research-first** — does this serve evaluating Frictionless?
+2. **Notes-section** — every lesson template carries a Notes &
+   Observations section.
+3. **Destruction** — any overwrite/delete flow needs modal confirmation.
+4. **Backend** — no servers, accounts, or telemetry.
+5. **Pinning** — new external deps land pinned and recorded.
+6. **Limitations** — new sharp edges go into `docs/limitations.md` in
+   the same change.
+
+If a gate flags a real concern, fix the spec or plan. If it flags a
 deliberate exception, justify it in the plan's Complexity Tracking
-section before running `/speckit-tasks`.
+section before `/speckit-tasks` runs.
 
-# Working a whole epic in one pass
+## Orchestration
 
-Backlog items are grouped under epics (E0–E3). Each epic ends at a
-publicly demonstrable artefact (Principle V — Phased Demonstrability),
-so an epic is the right batching unit when you want to make a visible
-jump rather than ship a single item.
+The polling orchestrator runs from a long-lived Claude Code session:
 
-The epic loop below processes a slice of the backlog without losing the
-per-item gates. To trigger it, run **`/epic E<n>`** (e.g. `/epic E1`);
-the skill at `.claude/skills/epic/SKILL.md` orchestrates this loop.
+```
+/backlog-worker-start          # claims a worker identity, then:
+/loop 15m /backlog-poll        # tick every 15 minutes
+```
 
-## Before starting an epic
+Per tick, `/backlog-poll`:
 
-1. **Pick the epic.** Read its row in `backlog.md` and the matching
-   section of `spec.md` §11.
-2. **Filter and order.** Select all items where `Epic = E<n>` and
-   `Status ∈ {proposed, specified, planned, tasked}`. Sort by:
-   1. dependency order (use the IDs cited in Description fields, e.g.
-      "determined by item #3"),
-   2. then **Total** score descending,
-   3. then Complexity ascending (Low first) to surface quick wins.
-   Capture this as a TodoWrite list — one todo per backlog ID — so the
-   plan is visible to the user.
-3. **Surface blockers.** Items with status `blocked` (e.g. #31) or
-   marked "determined by item #N" must wait. State the blockers in the
-   opening message before doing any work.
-4. **Confirm the epic gate.** For E0 specifically, the Phase 0 gate in
-   the constitution requires Spike A, Spike B, and Measurement C to
-   pass before any E1 work begins. Do not start E1 items if E0 is not
-   green.
-5. **Branching strategy.** When implementing a whole epic in one
-   session, use **one branch per epic** named
-   `epic/E<n>-<slug>` (e.g. `epic/E1-ide-shell`). All items in the
-   epic land on that branch and ship together in a single PR at epic
-   close. Create the branch once, up front — do **not** invoke
-   `/speckit-git-feature` per item; that skill is for single-item
-   work outside of epic mode. The trade-off: the PR is large, but the
-   epic is the demonstrable unit (Principle V), so reviewing it as a
-   whole matches how it will be evaluated.
+1. Skips if `.claude/in-flight/` has unresolved question locks.
+2. Fetches Project state via GraphQL (Status, Phase, V/M/A, Owner,
+   sub-issues per item).
+3. Recomputes `Total = V + M + A` for drifted items.
+4. For each item: consults the (Status, Phase) pair and advances one
+   phase per tick using the table above.
+5. Claims unowned actionable items by writing its identity to `Owner`
+   (re-reads to confirm, preventing races).
+6. Releases `Owner` at human-review gates (Phase → Designed; PR opened
+   for review).
 
-   Single-item mode (one branch per backlog item, merged
-   independently) is still available for one-off changes outside an
-   epic push, or for hotfixes.
+**Key invariant**: decisions key off API state (the Phase field), not
+working-tree state. Long-running branches with unmerged work never
+re-trigger.
 
-## Per-item loop within the epic
+When blocked on maintainer input, the orchestrator writes a question to
+`.claude/in-flight/<issue-number>.md`, asks in chat, and exits;
+subsequent ticks are no-ops until the lock is removed.
 
-All work below happens on the single `epic/E<n>-<slug>` branch. Items
-do not get their own branches and are not merged independently.
+## Epics and sub-issues
 
-For each item in the ordered list:
+Epics are parent issues. They go through the same design phases as
+regular items (`specify` → optional `clarify` → `plan` → `tasks`). They
+differ at the final design step: `/speckit-taskstoissues` files each
+task as a child sub-issue under the epic. Each sub-issue lands in
+Triage, gets its own scoring, and progresses independently.
 
-1. Run the per-item cycle above end-to-end on the epic branch,
-   skipping step 1 (`/speckit-git-feature`).
-2. Commit per item, not per skill — one commit per item is the target
-   granularity. Suggested message:
-   `feat(#<id>): <short description>` for code,
-   `docs(#<id>): spec/plan/tasks` for the speckit artefacts under
-   `specs/<NNN-slug>/`. Keep commits clean so the epic PR reads as a
-   sequence of items.
-3. Mark the corresponding TodoWrite todo `completed` as soon as the
-   item's tasks all pass on the epic branch — do not wait for the
-   epic PR to merge, and do not batch multiple completions.
-4. Update `backlog.md`: status column, `Updated` date, strikethrough
-   on completion. Commit with `docs: backlog status — #<id> <status>`.
-5. If `/speckit-analyze` or implementation surfaces a new sharp edge,
-   stop and update `docs/limitations.md` in the same change
-   (Principle VII).
-6. If a downstream item's assumptions changed (e.g. Measurement C
-   results redirect Pyodide placement), pause the loop, re-score and
-   re-order the remaining items, and tell the user before continuing.
-7. If the epic branch grows long-running, rebase onto `main`
-   periodically rather than merging `main` in, to keep the eventual
-   PR readable.
+Status independence: children progress individually; the epic parent
+stays in In Design until all children are Ready, then moves Ready →
+Doing → Done in step. GitHub enforces that an epic cannot close until
+all children close.
 
-## Closing the epic
-
-An epic is **not** complete until its phase exit criterion in
-`spec.md` §11 is demonstrably met:
-
-- **E0 done** = Spike A, Spike B, and Measurement C results recorded
-  in `docs/architecture.md`; recommendation written; go/no-go stated.
-- **E1 done** = "paste a CSV, run `frictionless describe`, see output"
-  works against the deployed Pages site.
-- **E2 done** = landing page + eight lessons live, each with completed
-  Notes & Observations.
-- **E3 done** = README, version pinning, limitations doc, v1.0 tag.
-
-Verify the criterion in a real browser against the deployed site, not
-just locally. Then:
-
-1. Strikethrough the epic row in the `## Epics` table of
-   `backlog.md` and commit on the epic branch.
-2. Push the epic branch and open a **single PR** titled
-   `epic: E<n> — <title>`. The PR description MUST list every backlog
-   ID included (each as `- #<id> <title>`), link the demonstrable
-   artefact (deployed URL, recorded measurements, etc.), and call out
-   any limitations added in `docs/limitations.md`. This is the only
-   merge gate for the epic; per-item PRs are not used in epic mode.
-3. After merge, delete the epic branch.
-4. Stop and hand back to the user before starting the next epic — do
-   not roll straight into E<n+1>. Phase boundaries are deliberate
-   pause points (Principle V).
+This replaces the previous "one branch per epic, single PR at epic
+close" pattern.
 
 ## When to ask vs. when to proceed
 
-- Proceed without asking on items whose Description is
-  self-contained, scored `A=5` (Autonomy), and `Status = proposed`.
-- Ask the user (use `AskUserQuestion`) when an item is `blocked`,
-  scored `A ≤ 3`, depends on an unmade decision in `spec.md`, or
-  would require introducing a dependency not listed in the
-  constitution's Technology Constraints (that is an amendment, not a
-  PR).
-- Always ask before batching multiple backlog IDs onto one branch or
-  skipping `/speckit-clarify`.
+- Proceed without asking when the issue is `Category = Feature`,
+  `A ≥ 4`, and the description is self-contained.
+- Ask the maintainer (`AskUserQuestion`) when an item is blocked,
+  scored `A ≤ 3`, depends on an unmade decision in `spec.md`, or would
+  introduce a dependency not listed in the constitution's Technology
+  Constraints (that is a constitution amendment, not a PR).
+- Always ask before deviating from the two-branch convention or
+  skipping the design PR.
