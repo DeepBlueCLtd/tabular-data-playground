@@ -3,8 +3,9 @@
 Source of the target methodology: <https://github.com/DeepBlueCLtd/backlog-navigator>
 (`METHODOLOGY.md` and `docs/adopt-methodology.md`).
 
-This file is an investigation deliverable, not a runbook executed yet.
-Nothing here has been applied to the repo.
+This file started as an investigation deliverable; most of it has now
+been applied to the repo. Steps marked ✅ DONE record what shipped
+and how. Steps without a marker are still outstanding.
 
 ## Why the switch
 
@@ -153,28 +154,25 @@ GraphQL schema as of 2026-05-17; the per-option mutation surface from
 the user prompt is not in the API. The single `updateProjectV2Field`
 list-replacement mutation is the way.
 
-#### 3b. Built-in workflows — UI ONLY, action required
+#### 3b. Built-in workflows ✅ DONE 2026-05-17 (UI)
 
 GraphQL exposes `workflow`/`workflows` query types and one mutation
 (`deleteProjectV2Workflow`), but **no** mutation to read or modify the
 trigger/action configuration of a workflow (target Status option, repo
-filter, `is:issue` filter, etc.). These must be configured in the UI.
+filter, `is:issue` filter, etc.). The UI is the only path.
 
-The project comes with six built-in workflows already enabled by
-default: `Auto-add sub-issues to project`, `Auto-close issue`,
-`Item added to project`, `Item closed`, `Pull request linked to issue`,
-`Pull request merged`. **Defaults can't be inspected via API**, so each
-must be opened in the UI to verify it points at the right Status option
-after the reorder above.
+At <https://github.com/orgs/DeepBlueCLtd/projects/5/workflows>, the
+three workflows that make up the intake chain are now configured:
 
-At <https://github.com/orgs/DeepBlueCLtd/projects/5/workflows>:
+1. **Auto-add to project** — `DeepBlueCLtd/tabular-data-playground`,
+   filter set during 3c smoke test after the first attempt failed.
+2. **Item added to project** — enabled, Status = **Triage**.
+3. **Item closed** — enabled, Status = **Done**.
 
-1. **Auto-add to project** (likely not yet present — needs adding):
-   click "+ New workflow" → choose Auto-add → add
-   `DeepBlueCLtd/tabular-data-playground` → filter `is:issue` (drop the
-   `is:pr` filter unless you want PRs on the board too) → enable.
-2. **Item added to project** → verify enabled and Status = **Triage**.
-3. **Item closed** → verify enabled and Status = **Done**.
+The remaining default workflows (`Auto-add sub-issues to project`,
+`Auto-close issue`, `Pull request linked to issue`, `Pull request
+merged`) are left at GitHub's defaults; they don't interact with the
+Status/Phase state machine.
 
 #### 3c. Smoke test ✅ DONE 2026-05-17
 
@@ -211,8 +209,8 @@ The following are committed on
 - `backlog.md` → `docs/history/backlog.md.archived` with banner.
 - `CLAUDE.md` rewritten for the Status/Phase state machines and the
   two-branch convention. Epic-mode workflow removed.
-- `README.md` "Further reading" rewritten (still needs the URL fill-in
-  above).
+- `README.md` "Further reading" rewritten with the real Project URL
+  (commit `0aff6fd`, step 5 above).
 - `.github/ISSUE_TEMPLATE/backlog-item.yml`,
   `.claude/backlog-poll.config.json.example`,
   `.claude/skills/backlog-poll/`,
