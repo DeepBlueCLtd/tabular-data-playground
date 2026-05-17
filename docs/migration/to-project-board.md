@@ -134,20 +134,54 @@ title "Tabular Data Playground" → Settings (⋯) → Visibility: Public →
 add each of the eight fields manually with the names, types, and
 options listed above.
 
-### 3. Configure Status options and built-in workflows (UI)
+### 3. Configure Status options and built-in workflows
 
-At `https://github.com/orgs/DeepBlueCLtd/projects/<n>`:
+#### 3a. Status options ✅ DONE 2026-05-17 (via GraphQL)
 
-1. Settings → Status field → Manage options. Order **must** be:
-   `Triage, In Design, Ready, Doing, Done`.
-2. Workflows (top-right):
-   - **Auto-add to project** → enable; add
-     `DeepBlueCLtd/tabular-data-playground`; filter `is:issue`
-     (drop the PR filter unless you want PRs on the board too).
-   - **Item added to project** → enable, Status = Triage.
-   - **Item closed** → enable, Status = Done.
-3. Smoke test: open a throwaway issue; confirm it appears in `Triage`
-   within ~30 s; close it; confirm it moves to `Done`.
+Replaced the default `Todo, In Progress, Done` with the required
+`Triage, In Design, Ready, Doing, Done` using a single
+`updateProjectV2Field` mutation with the full `singleSelectOptions`
+list. The mutation requires `name`, `color`, and `description` per
+option (NON_NULL); description was left as `""` and colors chosen as:
+Triage=GRAY, In Design=BLUE, Ready=YELLOW, Doing=ORANGE, Done=GREEN.
+Existing option ids were reused where names mapped cleanly (Todo→Triage,
+In Progress→Doing, Done→Done) so Done's id (`98236657`) is preserved
+in case any workflow targets it by id.
+
+`updateProjectV2SingleSelectFieldOption` does **not** exist in the
+GraphQL schema as of 2026-05-17; the per-option mutation surface from
+the user prompt is not in the API. The single `updateProjectV2Field`
+list-replacement mutation is the way.
+
+#### 3b. Built-in workflows — UI ONLY, action required
+
+GraphQL exposes `workflow`/`workflows` query types and one mutation
+(`deleteProjectV2Workflow`), but **no** mutation to read or modify the
+trigger/action configuration of a workflow (target Status option, repo
+filter, `is:issue` filter, etc.). These must be configured in the UI.
+
+The project comes with six built-in workflows already enabled by
+default: `Auto-add sub-issues to project`, `Auto-close issue`,
+`Item added to project`, `Item closed`, `Pull request linked to issue`,
+`Pull request merged`. **Defaults can't be inspected via API**, so each
+must be opened in the UI to verify it points at the right Status option
+after the reorder above.
+
+At <https://github.com/orgs/DeepBlueCLtd/projects/5/workflows>:
+
+1. **Auto-add to project** (likely not yet present — needs adding):
+   click "+ New workflow" → choose Auto-add → add
+   `DeepBlueCLtd/tabular-data-playground` → filter `is:issue` (drop the
+   `is:pr` filter unless you want PRs on the board too) → enable.
+2. **Item added to project** → verify enabled and Status = **Triage**.
+3. **Item closed** → verify enabled and Status = **Done**.
+
+#### 3c. Smoke test (deferred — only after 3b is done)
+
+Once the three workflows above are confirmed, open a throwaway issue;
+confirm it lands on the Project in `Triage` within ~30 s; close it;
+confirm it moves to `Done`; delete the issue. **Not yet executed** —
+waiting on UI confirmation of 3b.
 
 No PAT, no repo secret, no `.github/workflows/add-to-project.yml`. The
 three built-in Project workflows above are the whole intake chain.
