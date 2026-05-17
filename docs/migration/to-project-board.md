@@ -176,12 +176,14 @@ At <https://github.com/orgs/DeepBlueCLtd/projects/5/workflows>:
 2. **Item added to project** → verify enabled and Status = **Triage**.
 3. **Item closed** → verify enabled and Status = **Done**.
 
-#### 3c. Smoke test (deferred — only after 3b is done)
+#### 3c. Smoke test ✅ DONE 2026-05-17
 
-Once the three workflows above are confirmed, open a throwaway issue;
-confirm it lands on the Project in `Triage` within ~30 s; close it;
-confirm it moves to `Done`; delete the issue. **Not yet executed** —
-waiting on UI confirmation of 3b.
+Throwaway issue created → landed on the Project with Status = `Triage`
+within ~30 s → closed → moved to Status = `Done` → deleted. Full intake
+chain works end-to-end. Note: the first try (issue #14) failed because
+the Auto-add workflow filter was wrong; once fixed in the UI, issue
+#15 flowed through cleanly. Auto-add only catches newly created issues
+— pre-existing ones are not retroactively added.
 
 No PAT, no repo secret, no `.github/workflows/add-to-project.yml`. The
 three built-in Project workflows above are the whole intake chain.
