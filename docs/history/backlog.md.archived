@@ -1,4 +1,13 @@
-# Backlog — Frictionless Data Explorer
+# Backlog — Frictionless Data Explorer (archived)
+
+> **Archived 2026-05-17.** This file is no longer the source of truth.
+> Work is tracked on the GitHub Project board per the methodology in
+> <https://github.com/DeepBlueCLtd/backlog-navigator>. See
+> `docs/migration/to-project-board.md` for the cutover plan.
+>
+> Preserved here for historical context: every item in this list was
+> complete at the v1.0 tag; the strikethrough rows below are the
+> record of how the project was built.
 
 Backlog distilled from `spec.md` (v0.5) and grouped by phase per the
 constitution's Principle V. Each phase is an epic (E0–E3); phases end at a

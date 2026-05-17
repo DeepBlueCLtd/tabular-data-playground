@@ -1,0 +1,11 @@
+name: Backlog item
+description: Propose work for the backlog. Triage will categorise it.
+title: "[item] "
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What's the work? Why does it matter? Anything you know about scope, constraints, examples.
+    validations:
+      required: true

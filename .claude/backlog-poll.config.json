@@ -1,0 +1,8 @@
+{
+  "project_owner": "DeepBlueCLtd",
+  "project_owner_type": "organization",
+  "project_number": 5,
+  "repo": "DeepBlueCLtd/tabular-data-playground",
+  "default_branch": "main",
+  "workspace_dir": "."
+}

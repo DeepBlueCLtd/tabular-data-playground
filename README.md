@@ -116,8 +116,12 @@ and deploys to GitHub Pages on push to `main`.
 - [`spec.md`](./spec.md) — the product specification (v0.5).
 - [`.specify/memory/constitution.md`](./.specify/memory/constitution.md)
   — non-negotiable principles and per-feature gates.
-- [`backlog.md`](./backlog.md) — epics E0–E3 and the prioritised
-  backlog, with status per item.
+- [GitHub Project board](https://github.com/orgs/DeepBlueCLtd/projects/5)
+  — current work tracker (see
+  `docs/migration/to-project-board.md` for the cutover from the
+  previous `backlog.md` file).
+- [`docs/history/backlog.md.archived`](./docs/history/backlog.md.archived)
+  — the historical pre-v1.0 backlog, all items complete at v1.0.
 - [`docs/architecture.md`](./docs/architecture.md) — runtime
   architecture and Phase 0 measurement results.
 - [`docs/limitations.md`](./docs/limitations.md) — every sharp
