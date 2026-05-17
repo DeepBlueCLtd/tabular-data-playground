@@ -77,7 +77,13 @@ The upstream `setup-project.sh` is **not** run. Skipping it avoids the
 `actions/add-to-project@v1` workflow (which needs a `PROJECT_TOKEN`
 PAT) and the silent-skill-fetch (which would un-pin the orchestrator).
 
-### 2. Create the Project and its fields
+### 2. Create the Project and its fields ✅ DONE 2026-05-17
+
+**Result:** Project #5, <https://github.com/orgs/DeepBlueCLtd/projects/5>
+(`PVT_kwDOAUMoTM4BX-Wa`). Public. All eight custom fields created via
+`gh project field-create` per the §2a recipe; visibility set public via
+`updateProjectV2 { public: true }` GraphQL mutation. The recipe below
+ran verbatim with no surprises.
 
 You need a Project (with eight custom fields) and the `Owner` to write
 into the config file. Two ways to do this; pick one.
