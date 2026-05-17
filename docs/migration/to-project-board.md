@@ -71,11 +71,20 @@ This creates:
 - Eight custom fields (Status, Phase, Owner, Category, Complexity,
   V, M, A, Total).
 - `.github/ISSUE_TEMPLATE/backlog-item.yml` — minimal "Description" only.
-- `.github/workflows/add-to-project.yml` — auto-adds new issues to the
-  Project.
 - `.claude/backlog-poll.config.json` — orchestrator config.
 - `.claude/skills/backlog-worker-start/SKILL.md` and
   `.claude/skills/backlog-poll/SKILL.md`.
+
+The upstream script also drops in `.github/workflows/add-to-project.yml`
+(an `actions/add-to-project@v1` workflow). **Delete that file** before
+committing — this repo uses the Project's built-in *Auto-add to project*
+workflow instead, which avoids needing a `PROJECT_TOKEN` PAT (see
+step 2). The built-in workflow does the same job:
+`org-level write to a v2 Project from a repo-level event`.
+
+```sh
+rm -f .github/workflows/add-to-project.yml
+```
 
 Verify:
 
@@ -83,8 +92,7 @@ Verify:
 ls .claude/backlog-poll.config.json \
    .claude/skills/backlog-worker-start/SKILL.md \
    .claude/skills/backlog-poll/SKILL.md \
-   .github/ISSUE_TEMPLATE/backlog-item.yml \
-   .github/workflows/add-to-project.yml
+   .github/ISSUE_TEMPLATE/backlog-item.yml
 
 gh project field-list <project-number> --owner DeepBlueCLtd \
   | jq -r '.fields[].name' | sort
@@ -104,16 +112,16 @@ At `https://github.com/orgs/DeepBlueCLtd/projects/<n>`:
 1. Settings → Status field → Manage options. Order **must** be:
    `Triage, In Design, Ready, Doing, Done`.
 2. Project Workflows (top-right):
-   - "Item added to project" → enabled, Status = Triage.
-   - "Item closed" → enabled, Status = Done.
-3. Create fine-grained PAT at
-   <https://github.com/settings/personal-access-tokens>:
-   - Resource owner: `DeepBlueCLtd`.
-   - Repository access: `tabular-data-playground` only.
-   - Organization permissions: Projects → Read and write.
-4. Repo Settings → Secrets and variables → Actions → add `PROJECT_TOKEN`.
-5. Smoke test: open a throwaway issue; confirm it appears in `Triage`
+   - **Auto-add to project** → enable; add
+     `DeepBlueCLtd/tabular-data-playground`; filter `is:issue`
+     (drop the PR filter unless you want PRs on the board too).
+   - **Item added to project** → enable, Status = Triage.
+   - **Item closed** → enable, Status = Done.
+3. Smoke test: open a throwaway issue; confirm it appears in `Triage`
    within ~30 s; close it; confirm it moves to `Done`.
+
+No PAT, no repo secret, no `.github/workflows/add-to-project.yml`. The
+three built-in Project workflows above are the whole intake chain.
 
 ### 3. Spec-kit re-init (probably a no-op)
 
