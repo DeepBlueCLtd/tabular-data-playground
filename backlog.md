@@ -38,7 +38,7 @@ Strikethrough rows indicate completed work.
 | ID | Title | Description | Status |
 |----|-------|-------------|--------|
 | ~~E0~~ | ~~Phase 0 — De-risking Spike~~ | ~~Prove the riskiest things work and gather measurements before committing to the full build (`spec.md` §11)~~ | ~~complete~~ |
-| E1 | Phase 1 — IDE Shell | App shell, virtual FS, editor, terminal, Pyodide wiring; ends at "paste a CSV, run frictionless describe, see output" (`spec.md` §11) | proposed |
+| ~~E1~~ | ~~Phase 1 — IDE Shell~~ | ~~App shell, virtual FS, editor, terminal, Pyodide wiring; ends at "paste a CSV, run frictionless describe, see output" (`spec.md` §11)~~ | ~~complete~~ |
 | ~~E2~~ | ~~Phase 2 — Lesson System + Curriculum~~ | ~~Landing, lesson loader, eight lessons with Notes & Observations, supporting docs (`spec.md` §11)~~ | ~~complete~~ |
 | ~~E3~~ | ~~Phase 3 — Polish & Freeze~~ | ~~Walkthrough fixups, README, version pinning, v1.0 tag (`spec.md` §11)~~ | ~~complete~~ |
 
