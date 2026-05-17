@@ -196,14 +196,10 @@ cp .claude/backlog-poll.config.json.example .claude/backlog-poll.config.json
 Verified: `jq '.' .claude/backlog-poll.config.json` parses cleanly and
 `.specify/` is present with the spec-kit layout.
 
-### 5. Update README.md with the real Project URL
+### 5. Update README.md with the real Project URL ✅ DONE 2026-05-17
 
-`README.md` currently has a placeholder:
-
-> Replace this line with the Project URL once the board is created.
-
-Edit the "GitHub Project board" bullet under "Further reading" and put
-the actual Project URL in place.
+The "GitHub Project board" bullet under "Further reading" now links to
+<https://github.com/orgs/DeepBlueCLtd/projects/5>.
 
 ### 6. Already done on this branch
 
