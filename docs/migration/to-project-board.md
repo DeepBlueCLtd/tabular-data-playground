@@ -186,19 +186,15 @@ waiting on UI confirmation of 3b.
 No PAT, no repo secret, no `.github/workflows/add-to-project.yml`. The
 three built-in Project workflows above are the whole intake chain.
 
-### 4. Wire up the orchestrator config
+### 4. Wire up the orchestrator config ✅ DONE 2026-05-17
 
 ```sh
 cp .claude/backlog-poll.config.json.example .claude/backlog-poll.config.json
-# Edit and replace project_number: 0 with the real number from step 2.
+# project_number set to 5.
 ```
 
-Verify the orchestrator's preflight will succeed:
-
-```sh
-jq '.' .claude/backlog-poll.config.json   # must parse, project_number > 0
-ls .specify/                              # spec-kit must be present
-```
+Verified: `jq '.' .claude/backlog-poll.config.json` parses cleanly and
+`.specify/` is present with the spec-kit layout.
 
 ### 5. Update README.md with the real Project URL
 
