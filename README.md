@@ -116,8 +116,15 @@ pnpm test:e2e                # Playwright Chromium smoke
 pnpm capture:screenshots     # regenerate app/e2e/screenshots/
 ```
 
-CI runs `pnpm build` and `pnpm test` on PR (`.github/workflows/`),
-and deploys to GitHub Pages on push to `main`.
+The static welcome page and findings slides live in `web/`
+(`web/index.html` and `web/slides/`); the IDE lives in `app/`. The
+deploy workflow assembles all three into the published gh-pages tree.
+
+CI runs `pnpm build` and `pnpm test` on PR (`.github/workflows/`), and
+deploys to GitHub Pages on push to `main`. Each PR also gets a full-site
+preview published under `pr-preview/pr-<N>/` of the `gh-pages` branch,
+with a sticky comment linking to it; the preview is removed when the PR
+closes.
 
 ## Further reading
 
