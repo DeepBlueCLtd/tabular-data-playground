@@ -1,17 +1,22 @@
-name: PR preview deploy
+name: PR Preview to GitHub Pages
 
-# Builds each PR with a PR-specific Vite base path and publishes it
-# under `/pr-preview/pr-<N>/` of the gh-pages branch. Posts (or
-# updates) a single sticky comment on the PR with the preview URL.
-# Removes the directory and the comment when the PR closes.
+# Builds the full published site for a PR and deploys it under
+# `/pr-preview/<N>/` of the gh-pages branch, mirroring the production
+# layout:
+#   /pr-preview/<N>/             → welcome page (web/index.html)
+#   /pr-preview/<N>/slides/      → reveal.js findings deck
+#   /pr-preview/<N>/playground/  → the Vite IDE (PR-scoped base path)
+#   /pr-preview/<N>/sample-package/ → lesson 8's package, kept at the
+#                                     preview root to mirror production
+# A single sticky comment (idempotent via the marker below) links to
+# the preview. Cleanup on close lives in pr-preview-cleanup.yml.
 #
-# The action only runs for PRs from branches in the same repo
-# (skips forks) because secrets aren't available to fork-triggered
-# workflow runs and the deploy step needs `contents: write`.
+# Only runs for same-repo PRs: fork PRs have no access to the
+# `contents: write` token the deploy step needs.
 
 on:
   pull_request:
-    types: [opened, reopened, synchronize, closed]
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
@@ -20,34 +25,26 @@ permissions:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
-concurrency:
-  group: pr-preview-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
-
 jobs:
-  build:
-    name: Build PR ${{ github.event.pull_request.number }} preview
-    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+  preview:
+    name: Build and publish PR ${{ github.event.pull_request.number }} preview
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: app
-    outputs:
-      pr-number: ${{ steps.meta.outputs.pr }}
+    concurrency:
+      group: pr-preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     steps:
       - name: Check out PR head
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Resolve PR metadata
-        id: meta
-        run: echo "pr=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
-
-      - name: Set up pnpm
+      - name: Set up pnpm (version from app/package.json packageManager field)
         uses: pnpm/action-setup@v4
         with:
           package_json_file: app/package.json
 
-      - name: Set up Node.js
+      - name: Set up Node.js with pnpm cache
         uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -55,86 +52,77 @@ jobs:
           cache-dependency-path: app/pnpm-lock.yaml
 
       - name: Install dependencies (frozen)
+        working-directory: app
         run: pnpm install --frozen-lockfile
 
-      - name: Build with PR-scoped base path
+      - name: Build IDE with PR-scoped base path
+        working-directory: app
         env:
-          VITE_BASE_PATH: /tabular-data-playground/pr-preview/pr-${{ github.event.pull_request.number }}/
+          VITE_BASE_PATH: /tabular-data-playground/pr-preview/${{ github.event.pull_request.number }}/playground/
         run: pnpm run build
 
-      - name: Upload built site for the deploy job
-        uses: actions/upload-artifact@v4
-        with:
-          name: pr-preview-${{ github.event.pull_request.number }}
-          path: app/dist
-          retention-days: 7
-
-  deploy:
-    name: Publish PR ${{ github.event.pull_request.number }} to gh-pages
-    needs: build
-    if: github.event.action != 'closed'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out gh-pages source for cleanup tooling
-        uses: actions/checkout@v4
-
-      - name: Download built site
-        uses: actions/download-artifact@v4
-        with:
-          name: pr-preview-${{ github.event.pull_request.number }}
-          path: dist
-
-      - name: Publish to gh-pages /pr-preview/pr-N/
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: dist
-          publish_branch: gh-pages
-          destination_dir: pr-preview/pr-${{ github.event.pull_request.number }}
-          keep_files: true
-          commit_message: 'preview: PR #${{ github.event.pull_request.number }} @ ${{ github.event.pull_request.head.sha }}'
-
-      - name: Comment preview URL on PR
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          header: pr-preview-url
-          message: |
-            ### Preview deploy ready
-
-            **URL**: https://${{ github.repository_owner }}.github.io/tabular-data-playground/pr-preview/pr-${{ github.event.pull_request.number }}/
-
-            Built from `${{ github.event.pull_request.head.sha }}`. Updates on every push to this PR; removed when the PR closes.
-
-  cleanup:
-    name: Remove PR ${{ github.event.pull_request.number }} preview
-    if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out gh-pages
-        uses: actions/checkout@v4
-        with:
-          ref: gh-pages
-          fetch-depth: 0
-
-      - name: Remove preview directory and push
+      - name: Assemble preview site (welcome + slides + IDE + sample-package)
         run: |
           set -e
-          DIR="pr-preview/pr-${{ github.event.pull_request.number }}"
-          if [ -d "$DIR" ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git rm -rf "$DIR"
-            git commit -m "preview: remove PR #${{ github.event.pull_request.number }} (closed)"
-            git push origin gh-pages
-          else
-            echo "No preview dir to clean up."
+          rm -rf _site
+          mkdir -p _site
+          cp -r web/. _site/
+          mkdir -p _site/playground
+          cp -r app/dist/. _site/playground/
+          if [ -d _site/playground/sample-package ]; then
+            rm -rf _site/sample-package
+            mv _site/playground/sample-package _site/sample-package
           fi
 
-      - name: Update sticky comment
-        uses: marocchino/sticky-pull-request-comment@v2
+      - name: Deploy preview to gh-pages subfolder
+        # JamesIves/github-pages-deploy-action v4.7.3, pinned to its SHA
+        # (supply-chain best practice). `clean: true` with `target-folder`
+        # scrubs stale files inside this PR's subfolder only, leaving the
+        # main deploy and other PR previews untouched.
+        uses: JamesIves/github-pages-deploy-action@6c2d9db40f9296374acc17b90404b6e8864128c8
         with:
-          header: pr-preview-url
-          message: |
-            ### Preview deploy removed
+          branch: gh-pages
+          folder: _site
+          target-folder: pr-preview/${{ github.event.pull_request.number }}
+          clean: true
+          commit-message: 'preview: PR #${{ github.event.pull_request.number }} @ ${{ github.event.pull_request.head.sha }}'
 
-            The preview for this PR has been deleted now that the PR is closed.
+      - name: Comment preview URL on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request.number;
+            const sha = context.payload.pull_request.head.sha.slice(0, 7);
+            const base = `https://${context.repo.owner}.github.io/${context.repo.repo}/pr-preview/${pr}/`;
+            const marker = '<!-- tdp-pr-preview -->';
+            const body = [
+              marker,
+              '🚀 **PR preview deployed**',
+              '',
+              `- Welcome page: ${base}`,
+              `- Findings slides: ${base}slides/`,
+              `- IDE: ${base}playground/`,
+              '',
+              `Built from \`${sha}\`. Updates on every push to this PR; removed when the PR closes.`,
+            ].join('\n');
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr,
+                body,
+              });
+            }
