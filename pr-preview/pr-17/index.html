@@ -1,13 +1,198 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Frictionless Data Explorer</title>
-    <script type="module" crossorigin src="/tabular-data-playground/pr-preview/pr-17/assets/index-BKsJdsYf.js"></script>
-    <link rel="stylesheet" crossorigin href="/tabular-data-playground/pr-preview/pr-17/assets/index-5Z-J_fKG.css">
+    <meta
+      name="description"
+      content="An in-browser playground and evaluation of the Frictionless Data ecosystem — a dated research artefact."
+    />
+    <style>
+      :root {
+        --bg: #0d1117;
+        --panel: #161b22;
+        --border: #30363d;
+        --fg: #e6edf3;
+        --muted: #8b949e;
+        --accent: #1f6feb;
+        --accent-2: #388bfd;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+          sans-serif;
+        line-height: 1.55;
+      }
+      a {
+        color: var(--accent-2);
+      }
+      .wrap {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 72px 24px 96px;
+      }
+      header h1 {
+        font-size: 2.4rem;
+        margin: 0 0 0.3em;
+        letter-spacing: -0.02em;
+      }
+      header p.tagline {
+        font-size: 1.15rem;
+        color: var(--muted);
+        margin: 0 0 0.4em;
+      }
+      .pins {
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+      .pins code {
+        color: var(--fg);
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin: 40px 0;
+      }
+      @media (max-width: 640px) {
+        .cards {
+          grid-template-columns: 1fr;
+        }
+      }
+      .card {
+        display: block;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px;
+        text-decoration: none;
+        color: inherit;
+        transition:
+          border-color 0.15s ease,
+          transform 0.15s ease;
+      }
+      .card:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+      }
+      .card h2 {
+        margin: 0 0 0.3em;
+        font-size: 1.3rem;
+        color: var(--accent-2);
+      }
+      .card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+      .card .kicker {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin: 0 0 0.6em;
+      }
+      section.about {
+        border-top: 1px solid var(--border);
+        padding-top: 32px;
+        color: var(--muted);
+      }
+      section.about h3 {
+        color: var(--fg);
+        font-size: 1.05rem;
+        margin: 24px 0 0.4em;
+      }
+      section.about ul {
+        padding-left: 1.2em;
+      }
+      footer {
+        margin-top: 48px;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div class="wrap">
+      <header>
+        <h1>Frictionless Data Explorer</h1>
+        <p class="tagline">
+          An in-browser playground and evaluation of the
+          <a href="https://frictionlessdata.io/">Frictionless Data</a>
+          ecosystem — no servers, no accounts.
+        </p>
+        <p class="pins">
+          A dated research artefact &mdash; what we found in 2026, against
+          <code>frictionless 5.19.0</code> on Pyodide <code>0.27.7</code>.
+        </p>
+      </header>
+
+      <div class="cards">
+        <a class="card" href="playground/">
+          <p class="kicker">Run it</p>
+          <h2>Open the IDE &rarr;</h2>
+          <p>
+            A Monaco editor, a virtual filesystem, and a shell wired to
+            Pyodide, so the <code>frictionless</code> CLI runs entirely in your
+            browser. Eight lessons walk the full toolchain.
+          </p>
+        </a>
+        <a class="card" href="slides/">
+          <p class="kicker">The findings</p>
+          <h2>View the slides &rarr;</h2>
+          <p>
+            Is Frictionless a fit? A short deck distilling what worked, the
+            sharp edges we hit, and the domain-fitness question still open for
+            v1.1.
+          </p>
+        </a>
+      </div>
+
+      <section class="about">
+        <h3>What this is</h3>
+        <p>
+          A research artefact for evaluating Frictionless as one data-validation
+          option among several. The strategy is <em>build-it-to-learn-it</em>:
+          forcing a working IDE and an eight-lesson curriculum into existence is
+          itself the research method. Each lesson carries a
+          <strong>Notes &amp; Observations</strong> section recording what
+          worked, what surprised, and what required a workaround.
+        </p>
+
+        <h3>The eight lessons</h3>
+        <ul>
+          <li>Describe a CSV &middot; Write a Schema &middot; Validate &amp; fix</li>
+          <li>Build a Data Package &middot; Dialect &amp; encoding quirks</li>
+          <li>Transform &middot; Inquiry &middot; Publish &amp; consume</li>
+        </ul>
+
+        <h3>Source &amp; evidence</h3>
+        <ul>
+          <li>
+            <a href="https://github.com/DeepBlueCLtd/tabular-data-playground"
+              >Repository on GitHub</a
+            >
+          </li>
+          <li>
+            <code>content/lessons/{01..08}</code> — the lessons and their Notes
+            &amp; Observations
+          </li>
+          <li><code>docs/limitations.md</code> — every recorded sharp edge</li>
+        </ul>
+      </section>
+
+      <footer>
+        Best on a wider screen. MIT-licensed. &copy; 2026 DeepBlue C Ltd.
+      </footer>
+    </div>
   </body>
 </html>

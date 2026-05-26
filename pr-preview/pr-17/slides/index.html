@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Is Frictionless a fit? — Findings</title>
+
+    <!--
+      reveal.js 5.1.0, loaded from a pinned jsdelivr CDN URL.
+      The URL is the pin (Constitution Principle VI); recorded in README.md.
+    -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css"
+      id="theme"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css"
+    />
+
+    <style>
+      :root {
+        --accent: #1f6feb;
+        --good: #1a7f37;
+        --warn: #9a6700;
+        --bad: #b42318;
+      }
+      .reveal h1,
+      .reveal h2,
+      .reveal h3 {
+        text-transform: none;
+        letter-spacing: -0.01em;
+      }
+      .reveal h1 {
+        font-size: 2.0em;
+      }
+      .reveal section {
+        font-size: 0.92em;
+      }
+      .reveal .subtitle {
+        color: #57606a;
+        font-size: 0.7em;
+        margin-top: 0.4em;
+      }
+      .reveal .accent {
+        color: var(--accent);
+      }
+      .reveal .good {
+        color: var(--good);
+      }
+      .reveal .warn {
+        color: var(--warn);
+      }
+      .reveal .bad {
+        color: var(--bad);
+      }
+      .reveal .tag {
+        display: inline-block;
+        font-size: 0.55em;
+        font-weight: 600;
+        padding: 0.1em 0.55em;
+        border-radius: 999px;
+        vertical-align: middle;
+        margin-left: 0.4em;
+      }
+      .reveal .tag.good {
+        background: #dafbe1;
+        color: var(--good);
+      }
+      .reveal .tag.warn {
+        background: #fff8c5;
+        color: var(--warn);
+      }
+      .reveal .tag.bad {
+        background: #ffebe9;
+        color: var(--bad);
+      }
+      .reveal table {
+        font-size: 0.62em;
+      }
+      .reveal table th {
+        background: #f6f8fa;
+      }
+      .reveal code {
+        font-size: 0.95em;
+      }
+      .reveal .footnote {
+        position: absolute;
+        bottom: 0.6em;
+        left: 0;
+        width: 100%;
+        font-size: 0.4em;
+        color: #8b949e;
+      }
+      .reveal ul {
+        width: 100%;
+      }
+      .reveal .lead {
+        font-size: 1.15em;
+      }
+      .reveal a.home {
+        position: fixed;
+        top: 12px;
+        left: 16px;
+        z-index: 40;
+        font-size: 13px;
+        color: #57606a;
+        text-decoration: none;
+      }
+      .reveal a.home:hover {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <a class="home" href="../">&larr; Home</a>
+    <div class="reveal">
+      <div class="slides">
+        <!-- 1. Title -->
+        <section data-auto-animate>
+          <h1>Is <span class="accent">Frictionless Data</span> a fit?</h1>
+          <p class="lead">Findings from building the Frictionless Data Explorer</p>
+          <p class="subtitle">
+            A research artefact — what we found in 2026, against
+            <code>frictionless 5.19.0</code> on Pyodide <code>0.27.7</code>
+          </p>
+          <aside class="notes">
+            This deck distils the evaluation. It pairs with the live
+            playground (the IDE) and the eight lessons whose Notes &amp;
+            Observations are the underlying evidence.
+          </aside>
+        </section>
+
+        <!-- 2. The question -->
+        <section>
+          <h2>The question we set out to answer</h2>
+          <p class="lead">
+            Does the Frictionless ecosystem do what we expect — and where
+            does it creak?
+          </p>
+          <ul>
+            <li>
+              This is a <strong>research artefact</strong>, not a product. Its
+              job is to evaluate Frictionless as one validation "leg" among
+              several.
+            </li>
+            <li>
+              Stance: <strong>confirmatory with adversarial probes</strong> —
+              we expected it to fit, and went looking for the sharp edges
+              anyway.
+            </li>
+            <li>
+              Method: <strong>build-it-to-learn-it</strong>. Forcing a working
+              IDE and a full curriculum into existence <em>is</em> the research.
+            </li>
+          </ul>
+          <aside class="notes">
+            The working hypothesis was that Frictionless fits. An honest
+            evaluation still has to surface the friction points.
+          </aside>
+        </section>
+
+        <!-- 3. What we built -->
+        <section>
+          <h2>What we built to find out</h2>
+          <ul>
+            <li>
+              An <strong>in-browser IDE</strong> — Monaco editor, a virtual
+              filesystem, and a mini-shell wired to <strong>Pyodide</strong>,
+              so the real <code>frictionless</code> CLI runs entirely in the
+              browser. No servers, no accounts.
+            </li>
+            <li>
+              <strong>Eight lessons</strong> covering the full arc:
+              describe &rarr; schema &rarr; validate &rarr; package &rarr;
+              dialect &rarr; transform &rarr; inquiry &rarr; publish.
+            </li>
+            <li>
+              Each lesson carries a <strong>Notes &amp; Observations</strong>
+              section, filled in <em>at the moment of contact</em> — what
+              worked, what surprised, what needed a workaround.
+            </li>
+          </ul>
+          <p class="subtitle">
+            Try it: the IDE lives at <code>/playground/</code> alongside these
+            slides.
+          </p>
+        </section>
+
+        <!-- 4. Headline verdict -->
+        <section data-auto-animate>
+          <h2>Headline verdict</h2>
+          <p class="lead good">Frictionless fits — with well-articulated caveats.</p>
+          <ul>
+            <li>
+              The core <strong>describe &rarr; validate &rarr; schema-author</strong>
+              loop is <strong class="good">boring-good</strong> — the healthy
+              80% of the tool.
+            </li>
+            <li>
+              The caveats are real and worth knowing <em>before</em> you
+              depend on them — most are about defaults and version-specific
+              surfaces, not fundamentals.
+            </li>
+            <li>
+              One question is <strong>deliberately deferred</strong>: does it
+              fit our <em>domain</em> (maritime acoustics)? That is v1.1.
+            </li>
+          </ul>
+        </section>
+
+        <!-- 5. What worked -->
+        <section>
+          <h2>What worked well <span class="tag good">the quiet-good</span></h2>
+          <ul>
+            <li>
+              <strong>Type inference</strong> is fast and reasonable; the
+              <strong>validate report is specific</strong> — row, field,
+              constraint, and a human-readable message.
+            </li>
+            <li>
+              <strong>Foreign-key checks</strong> name the lookup table and the
+              unresolvable value — more specific than typical database "FK
+              violation" messages.
+            </li>
+            <li>
+              <strong>Dialect sniffing</strong>: BOMs are handled invisibly
+              (<code>utf-8-sig</code>); semicolon and tab delimiters auto-detect
+              with no hint.
+            </li>
+            <li>
+              <strong>Remote consumption "just works"</strong>:
+              <code>describe</code>/<code>validate</code> on a package URL follow
+              relative paths and resolve foreign keys across CSVs at the same
+              prefix. File/URL polymorphism is invisible.
+            </li>
+          </ul>
+          <aside class="notes">
+            These are drawn from the "What worked" notes across lessons 1, 3,
+            4, 5 and 8.
+          </aside>
+        </section>
+
+        <!-- 6. The #1 footgun -->
+        <section data-auto-animate>
+          <h2>The #1 footgun <span class="tag bad">know this</span></h2>
+          <p class="lead">
+            <code>frictionless validate file.csv</code> with no schema returns
+            <strong class="good">VALID</strong> — even on garbage semantic data.
+          </p>
+          <ul>
+            <li>
+              Without <code>--schema</code> it runs only <strong>structural</strong>
+              checks: column counts, "does it parse as CSV".
+            </li>
+            <li>
+              Semantic checks — types, <code>required</code>, <code>unique</code>,
+              foreign keys — <strong>all need a schema</strong>.
+            </li>
+            <li>
+              In production: <strong>always pair <code>validate</code> with an
+              explicit schema.</strong> The default mode is a parser check, not
+              a correctness check.
+            </li>
+          </ul>
+          <p class="subtitle">Promoted to a top-level section in lesson 3.</p>
+        </section>
+
+        <!-- 7. Type inference priors -->
+        <section>
+          <h2>Type inference has cultural priors</h2>
+          <pre data-id="geopoint"><code class="language-text" data-trim>
+price_eur
+9,50      →  inferred as  geopoint   (!)
+          </code></pre>
+          <ul>
+            <li>
+              A semicolon-delimited European CSV with prices like
+              <code>9,50</code> infers <code>price_eur</code> as
+              <strong class="warn">geopoint</strong> — the comma reads as a
+              coordinate separator.
+            </li>
+            <li>
+              The fix is a one-line schema override:
+              <code>{ "type": "number", "decimalChar": "," }</code>.
+            </li>
+            <li>
+              Lesson 5 keeps this as a teaching moment: inference is good, but
+              its priors about "what a number looks like" are culture-specific.
+            </li>
+          </ul>
+        </section>
+
+        <!-- 8. Spec inconsistencies -->
+        <section>
+          <h2>Spec surfaces aren't uniform <span class="tag warn">foot-stubs</span></h2>
+          <ul>
+            <li>
+              <strong><code>primaryKey</code> string vs array.</strong>
+              <code>"primaryKey": "id"</code> is accepted in a
+              <em>package</em> schema but <strong>rejected</strong> inside an
+              <em>inquiry</em>-embedded schema (must be <code>["id"]</code>).
+            </li>
+            <li>
+              <strong>Schema-by-path.</strong> <code>"schema": "schema.json"</code>
+              works in a resource descriptor but <strong>fails</strong> inside an
+              inquiry task — embed the schema inline there.
+            </li>
+            <li>
+              <strong>Two errors, one cause.</strong> A duplicate id emits
+              <em>both</em> <code>unique-error</code> and <code>primary-key</code>
+              — one fix clears both, but a literal reading over-counts.
+            </li>
+            <li>
+              <strong>Row numbering counts the header</strong>: a problem on the
+              third data row reports as "row at position 4".
+            </li>
+          </ul>
+          <aside class="notes">
+            Inquiry-embedded schemas use a stricter validator than package
+            schemas — surfaced in lesson 7.
+          </aside>
+        </section>
+
+        <!-- 9. Transform -->
+        <section>
+          <h2>Transform is the weak spot <span class="tag bad">version-fragile</span></h2>
+          <ul>
+            <li>
+              <strong>No CLI <code>transform</code> in v5.19.</strong> The
+              most-mentioned Frictionless verb is the only one without a CLI —
+              you drop into the Python <code>transform()</code> function.
+            </li>
+            <li>
+              <strong><code>row-filter</code> formulas operate on raw strings.</strong>
+              <code>published_year &gt;= 1970</code> raises <code>TypeError</code>;
+              the working form is <code>int(published_year) &gt;= 1970</code>.
+            </li>
+            <li>
+              <strong>Inconsistent step naming.</strong> <code>field-remove</code>
+              takes <code>names</code> (plural); siblings take <code>name</code>.
+              There is no <code>field-rename</code> — you use
+              <code>field-update</code> with <code>descriptor.name</code>.
+            </li>
+          </ul>
+          <p class="subtitle bad">
+            Most version-fragile lesson in the curriculum — pin Frictionless
+            and re-walk lesson 6 on any upgrade.
+          </p>
+        </section>
+
+        <!-- 10. Platform constraints -->
+        <section>
+          <h2>Platform constraints (Pyodide + Pages)</h2>
+          <ul>
+            <li>
+              <strong>No SharedArrayBuffer.</strong> GitHub Pages can't serve
+              COOP/COEP headers, so no cross-origin isolation, no threading.
+            </li>
+            <li>
+              <strong>Cold-start latency.</strong> Pyodide + install is
+              ~1&ndash;3.7&nbsp;s cold; Firefox is ~3&ndash;5&times; slower than
+              Chromium. Pyodide runs on a Web Worker to keep the UI responsive.
+            </li>
+            <li>
+              <strong>Absolute paths rejected.</strong> Frictionless calls
+              <code>/file.csv</code> "not safe" — the worker
+              <code>chdir</code>s into the workspace and passes relative paths.
+            </li>
+            <li>
+              <strong>Enterprise DLP can strip WebAssembly from Workers</strong>
+              (managed Chrome). No code-side fix; the app detects it and
+              recommends Edge / Firefox.
+            </li>
+          </ul>
+          <p class="subtitle">
+            These are <em>delivery</em> constraints of running in-browser — not
+            Frictionless limitations.
+          </p>
+        </section>
+
+        <!-- 11. Per-lesson scorecard -->
+        <section>
+          <h2>Per-lesson scorecard</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Lesson</th>
+                <th>Verdict</th>
+                <th>Headline finding</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td><td>Describe</td><td class="good">Clean</td>
+                <td>Cleanest surface; <code>integer</code> not <code>year</code> by default</td>
+              </tr>
+              <tr>
+                <td>2</td><td>Schema</td><td class="good">Clean</td>
+                <td>Hand-readable; <code>primaryKey</code> &ne; field <code>unique</code></td>
+              </tr>
+              <tr>
+                <td>3</td><td>Validate</td><td class="warn">Caveat</td>
+                <td>No-schema validate returns VALID on bad data</td>
+              </tr>
+              <tr>
+                <td>4</td><td>Package</td><td class="good">Strong</td>
+                <td>Foreign-key reports are excellent; paths are cwd-relative</td>
+              </tr>
+              <tr>
+                <td>5</td><td>Dialect</td><td class="warn">Caveat</td>
+                <td>BOM/delimiter sniffing good; <code>9,50</code> &rarr; geopoint</td>
+              </tr>
+              <tr>
+                <td>6</td><td>Transform</td><td class="bad">Fragile</td>
+                <td>No CLI; raw-string formulas; inconsistent steps</td>
+              </tr>
+              <tr>
+                <td>7</td><td>Inquiry</td><td class="warn">Caveat</td>
+                <td>Stricter than packages; embed schemas inline</td>
+              </tr>
+              <tr>
+                <td>8</td><td>Publish</td><td class="good">Strong</td>
+                <td>Remote consumption "just works"; tutorial URLs often dead</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- 12. Open question -->
+        <section>
+          <h2>The open question <span class="tag warn">v1.1</span></h2>
+          <p class="lead">
+            Does Frictionless fit our <strong>domain</strong> — maritime
+            acoustics?
+          </p>
+          <p>v1 deliberately used stub CSVs. The fitness question owns v1.1:</p>
+          <ul>
+            <li>dB <strong>reference levels</strong> and units</li>
+            <li>per-row <strong>spectra arrays</strong></li>
+            <li>hierarchical <strong>campaign / run / pass</strong> structures</li>
+            <li><strong>controlled vocabularies</strong> aligned to ISO standards</li>
+          </ul>
+          <p class="subtitle">
+            v1 built the foundation; v1.1 turns it into a domain-fitness
+            assessment. This is the most important remaining question.
+          </p>
+        </section>
+
+        <!-- 13. Recommendation -->
+        <section data-auto-animate>
+          <h2>Recommendation</h2>
+          <p class="lead good">
+            Adopt Frictionless for tabular description, schema and validation —
+            with eyes open.
+          </p>
+          <ul>
+            <li><strong class="good">Lean on</strong> describe, schema authoring, validate-with-schema, packages, and remote consumption.</li>
+            <li><strong class="warn">Handle with care</strong> the no-schema-validate default, inquiry strictness, and dialect inference priors.</li>
+            <li><strong class="bad">Pin and re-test</strong> anything touching <code>transform</code> across versions.</li>
+            <li><strong>Still to prove:</strong> domain fitness for maritime acoustic data (v1.1).</li>
+          </ul>
+          <p class="subtitle">
+            Evidence: eight lessons' Notes &amp; Observations and
+            <code>docs/limitations.md</code>.
+          </p>
+        </section>
+
+        <!-- 14. End -->
+        <section>
+          <h2>Explore the evidence</h2>
+          <ul>
+            <li><a href="../playground/">The IDE</a> — run <code>frictionless</code> in your browser</li>
+            <li>The eight lessons — each with its own Notes &amp; Observations</li>
+            <li><code>README.md</code> Findings &amp; <code>docs/limitations.md</code> — the full catalogue</li>
+          </ul>
+          <p class="subtitle accent">
+            "This is what we found in 2026." &mdash; a dated, reproducible
+            reference build.
+          </p>
+        </section>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+    <script>
+      Reveal.initialize({
+        hash: true,
+        slideNumber: 'c/t',
+        transition: 'slide',
+        plugins: [RevealHighlight, RevealNotes],
+      });
+    </script>
+  </body>
+</html>
