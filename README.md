@@ -14,7 +14,14 @@ section capturing what worked, what surprised, and what required
 workarounds while authoring. Those notes are the evaluation
 output; this README distils them.
 
-**Live**: https://deepbluecltd.github.io/tabular-data-playground/
+**Live**: https://deepbluecltd.github.io/tabular-data-playground/ — a
+welcome page linking to:
+
+- the **IDE** at
+  [`/playground/`](https://deepbluecltd.github.io/tabular-data-playground/playground/)
+- the **findings slides** at
+  [`/slides/`](https://deepbluecltd.github.io/tabular-data-playground/slides/)
+  — a short deck distilling the evaluation (source in `web/slides/`).
 
 ![Frictionless Data Explorer — files panel](./app/e2e/screenshots/03-files-panel.png)
 
@@ -81,6 +88,7 @@ the eight lessons in `content/lessons/` were authored against.
 | Data Package JSON Schema | snapshot 2026-05-09 | Bundled from `https://specs.frictionlessdata.io/schemas/data-package.json` to `app/src/editor/schemas/data-package.json`. |
 | Table Schema JSON Schema | snapshot 2026-05-09 | Bundled from `https://specs.frictionlessdata.io/schemas/table-schema.json` to `app/src/editor/schemas/table-schema.json`. |
 | Table Dialect JSON Schema | snapshot 2026-05-09 (v2) | Bundled from `https://datapackage.org/profiles/2.0/tabledialect.json` to `app/src/editor/schemas/table-dialect.json` (`specs.frictionlessdata.io` returns 404 for dialect; `datapackage.org` is the canonical home). |
+| reveal.js (findings slides) | `5.1.0` | Loaded by `web/slides/index.html` from `https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/` — the URL is the pin. |
 
 The editor still attempts a runtime fetch of the canonical schemas
 on mount with a short timeout and uses the live copy if it

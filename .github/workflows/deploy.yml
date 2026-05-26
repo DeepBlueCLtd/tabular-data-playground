@@ -5,11 +5,18 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# Pages now serves from the `gh-pages` branch root. PR previews
-# (see pr-preview.yml) live under `/pr-preview/pr-N/` of the same
-# branch and must survive each main deploy. peaceiris's
-# `keep_files` option preserves files at the destination that the
-# new publish does not write.
+# Pages serves from the `gh-pages` branch root. The published tree is:
+#   /                  → static welcome page (web/index.html)
+#   /slides/           → reveal.js findings deck (web/slides/)
+#   /playground/       → the Vite IDE app (built with a matching base path)
+#   /sample-package/   → lesson 8's self-hosted Data Package (kept at root
+#                        so the URL hard-coded in lesson 8 stays valid)
+# PR previews (see pr-preview.yml) live under `/pr-preview/pr-N/` of the
+# same branch and must survive each main deploy. peaceiris's `keep_files`
+# option preserves files at the destination that the new publish does not
+# write. NOTE: moving the IDE off the root leaves the previous root-level
+# IDE assets behind under `keep_files`; a one-time manual cleanup of stale
+# root files on `gh-pages` can remove them (harmless, just dead bytes).
 permissions:
   contents: write
 
@@ -46,16 +53,33 @@ jobs:
       - name: Install dependencies (frozen)
         run: pnpm install --frozen-lockfile
 
-      - name: Build for Pages
+      - name: Build IDE for Pages (served under /playground/)
         env:
-          VITE_BASE_PATH: /tabular-data-playground/
+          VITE_BASE_PATH: /tabular-data-playground/playground/
         run: pnpm run build
+
+      - name: Assemble published site (welcome + slides + IDE + sample-package)
+        working-directory: ${{ github.workspace }}
+        run: |
+          set -e
+          rm -rf _site
+          mkdir -p _site
+          # Welcome page (/) and slides (/slides/)
+          cp -r web/. _site/
+          # IDE under /playground/
+          mkdir -p _site/playground
+          cp -r app/dist/. _site/playground/
+          # Keep the lesson-8 sample package at the gh-pages root
+          if [ -d _site/playground/sample-package ]; then
+            rm -rf _site/sample-package
+            mv _site/playground/sample-package _site/sample-package
+          fi
 
       - name: Publish to gh-pages root (preserve PR previews)
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: app/dist
+          publish_dir: _site
           publish_branch: gh-pages
           keep_files: true
           commit_message: 'deploy: main @ ${{ github.sha }}'
