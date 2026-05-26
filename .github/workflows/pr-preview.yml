@@ -3,11 +3,11 @@ name: PR Preview to GitHub Pages
 # Builds the full published site for a PR and deploys it under
 # `/pr-preview/<N>/` of the gh-pages branch, mirroring the production
 # layout:
-#   /pr-preview/<N>/             → welcome page (web/index.html)
-#   /pr-preview/<N>/slides/      → reveal.js findings deck
-#   /pr-preview/<N>/playground/  → the Vite IDE (PR-scoped base path)
-#   /pr-preview/<N>/sample-package/ → lesson 8's package, kept at the
-#                                     preview root to mirror production
+#   /pr-preview/pr-<N>/             → welcome page (web/index.html)
+#   /pr-preview/pr-<N>/slides/      → reveal.js findings deck
+#   /pr-preview/pr-<N>/playground/  → the Vite IDE (PR-scoped base path)
+#   /pr-preview/pr-<N>/sample-package/ → lesson 8's package, kept at the
+#                                        preview root to mirror production
 # A single sticky comment (idempotent via the marker below) links to
 # the preview. Cleanup on close lives in pr-preview-cleanup.yml.
 #
@@ -58,7 +58,7 @@ jobs:
       - name: Build IDE with PR-scoped base path
         working-directory: app
         env:
-          VITE_BASE_PATH: /tabular-data-playground/pr-preview/${{ github.event.pull_request.number }}/playground/
+          VITE_BASE_PATH: /tabular-data-playground/pr-preview/pr-${{ github.event.pull_request.number }}/playground/
         run: pnpm run build
 
       - name: Assemble preview site (welcome + slides + IDE + sample-package)
@@ -83,7 +83,7 @@ jobs:
         with:
           branch: gh-pages
           folder: _site
-          target-folder: pr-preview/${{ github.event.pull_request.number }}
+          target-folder: pr-preview/pr-${{ github.event.pull_request.number }}
           clean: true
           commit-message: 'preview: PR #${{ github.event.pull_request.number }} @ ${{ github.event.pull_request.head.sha }}'
 
@@ -93,7 +93,7 @@ jobs:
           script: |
             const pr = context.payload.pull_request.number;
             const sha = context.payload.pull_request.head.sha.slice(0, 7);
-            const base = `https://${context.repo.owner}.github.io/${context.repo.repo}/pr-preview/${pr}/`;
+            const base = `https://${context.repo.owner}.github.io/${context.repo.repo}/pr-preview/pr-${pr}/`;
             const marker = '<!-- tdp-pr-preview -->';
             const body = [
               marker,

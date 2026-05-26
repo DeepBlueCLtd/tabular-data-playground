@@ -34,9 +34,17 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           set -e
-          if [ -d "pr-preview/${PR_NUMBER}" ]; then
-            echo "Removing pr-preview/${PR_NUMBER}"
-            rm -rf "pr-preview/${PR_NUMBER}"
+          # Canonical path is pr-preview/pr-<N>; the bare pr-preview/<N> form
+          # is a transitional variant that may exist from an earlier run.
+          removed=0
+          for dir in "pr-preview/pr-${PR_NUMBER}" "pr-preview/${PR_NUMBER}"; do
+            if [ -d "$dir" ]; then
+              echo "Removing $dir"
+              rm -rf "$dir"
+              removed=1
+            fi
+          done
+          if [ "$removed" = "1" ]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add -A
