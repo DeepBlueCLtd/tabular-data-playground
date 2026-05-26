@@ -360,7 +360,13 @@ User clicks "Load lesson files" on lesson <slug>
 
 - Vite 6 builds `app/` → `app/dist/`. The `app/public/` directory
   (including `sample-package/` for lesson 8) ships as-is.
-- `VITE_BASE_PATH=/tabular-data-playground/` for GitHub Pages.
+- `VITE_BASE_PATH=/tabular-data-playground/playground/` for GitHub
+  Pages — the IDE is served under `/playground/`, not the root.
+- The published `gh-pages` tree is assembled in `deploy.yml`:
+  `web/index.html` → `/` (welcome page), `web/slides/` → `/slides/`
+  (the reveal.js findings deck), `app/dist/` → `/playground/`, and
+  `sample-package/` is hoisted back to the root (`/sample-package/`)
+  so the URL hard-coded in lesson 8 stays valid.
 - `pnpm install --frozen-lockfile` in CI; the lockfile is the
   pinning contract (Principle VI).
 - E2E tests (`pnpm test:e2e`) build with

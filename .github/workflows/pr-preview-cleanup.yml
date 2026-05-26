@@ -1,0 +1,80 @@
+name: PR Preview Cleanup
+
+# Removes `/pr-preview/<N>/` from the gh-pages branch when a PR closes
+# and updates the sticky preview comment. Paired with pr-preview.yml.
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+jobs:
+  cleanup:
+    name: Remove PR ${{ github.event.pull_request.number }} preview
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    concurrency:
+      group: pr-preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    steps:
+      - name: Check out gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 1
+
+      - name: Remove PR preview folder and push
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -e
+          # Canonical path is pr-preview/pr-<N>; the bare pr-preview/<N> form
+          # is a transitional variant that may exist from an earlier run.
+          removed=0
+          for dir in "pr-preview/pr-${PR_NUMBER}" "pr-preview/${PR_NUMBER}"; do
+            if [ -d "$dir" ]; then
+              echo "Removing $dir"
+              rm -rf "$dir"
+              removed=1
+            fi
+          done
+          if [ "$removed" = "1" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "preview: remove PR #${PR_NUMBER} (closed)"
+            git push origin gh-pages
+          else
+            echo "No preview directory for PR ${PR_NUMBER}; nothing to clean."
+          fi
+
+      - name: Note cleanup on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request.number;
+            const marker = '<!-- tdp-pr-preview -->';
+            const note = [
+              marker,
+              `🧹 PR preview for #${pr} has been removed now that the PR is closed.`,
+            ].join('\n');
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: note,
+              });
+            }
