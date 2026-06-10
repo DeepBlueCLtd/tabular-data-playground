@@ -21,8 +21,9 @@ recorded in [docs/limitations.md](https://github.com/DeepBlueCLtd/tabular-data-p
   (a few seconds, one time per session). Later commands are instant.
 - We use **`livemark build`** only. `livemark start` (its live-reload dev
   server) needs a real HTTP server, which a browser sandbox can't provide.
-- Livemark builds the HTML *into your workspace*. Previewing the rendered
-  page in-app isn't wired up yet (see Notes); you build and inspect it here.
+- Livemark builds the HTML *into your workspace*. Open the built
+  `report.html` and click **Preview** to see it rendered — equation typeset,
+  tables interactive — in a sandboxed iframe, without leaving the playground.
 
 ## Set up
 
@@ -105,17 +106,16 @@ finishes, a new `report.html` sits next to `report.md`:
 ls
 ```
 
-Open **report.html** in the editor (click it in the file tree). Even though
-it's HTML source, you can confirm the payload is all there:
+Open **report.html** in the editor (click it in the file tree), then click
+**Preview** in the editor toolbar. The page renders in a sandboxed iframe: the
+equation typeset by MathJax, and each `yaml table` block an interactive table
+with **every row** from `measurements.csv` and `vessels.csv` embedded inline.
 
-- the `<script>` tags that load MathJax,
-- your LaTeX equation, untouched, ready for MathJax to typeset,
-- a `<table>` per `yaml table` block, with **every row** from
-  `measurements.csv` and `vessels.csv` embedded inline.
-
-To see it *rendered* — equation typeset, tables interactive — you'd open
-`report.html` in a normal browser tab. Getting files out of the sandbox to do
-that is a known gap (see Notes).
+Toggle back to **Code** to read the HTML source Livemark generated — the
+`<script>` tags that load MathJax, the untouched LaTeX, and a `<table>` per
+block. (The preview loads MathJax/DataTables from their CDNs at view time;
+offline it degrades to the inline content — the rows still show, just without
+the styling and interactivity.)
 
 ## Why it works
 
@@ -147,6 +147,12 @@ that is a known gap (see Notes).
   the validation layer share one mental model.
 - **Raw-HTML passthrough** made MathJax trivial to add without any Livemark
   config — paste a `<script>`, done.
+- **In-app preview in a sandboxed iframe works.** The built `report.html`
+  renders in `<iframe srcDoc sandbox="allow-scripts allow-popups">` — MathJax
+  typesets and DataTables initialises with **no** `allow-same-origin`, so the
+  framed page can't reach the host app. Verified the equation and both tables
+  render; the only requirement is network for the CDN assets at view time.
+  Stays entirely in-browser, so decision #21 (no export) still holds.
 
 ### What surprised
 
@@ -178,10 +184,6 @@ that is a known gap (see Notes).
 
 ### Open questions
 
-- **In-app preview.** We can *build* the static site but not *view* it
-  rendered — there's no HTML preview pane and no file export (decision #21).
-  A sandboxed `<iframe srcdoc>` preview, or a download affordance, would close
-  the loop. Owned as future work, not v1.
 - **Charts.** Livemark's `chart` plugin (Vega-Lite) wasn't exercised here.
   Whether its client-side assets behave the same way under this build is worth
   a follow-up if charts earn a place in the curriculum.

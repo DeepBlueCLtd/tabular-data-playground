@@ -393,12 +393,17 @@ Pyodide 0.27.7 surfaced several sharp edges, all accepted for v1:
   *punctuation* macros (`\,`, `\!`); backslash-*letter* macros
   (`\cdot`, `\frac`, `\log`) survive. The lesson equation uses only the
   latter.
-- **Built HTML can be produced but not previewed in-app.** The lesson
-  writes `report.html` into the workspace, but there is no HTML preview
-  pane and no file export (decision #21), so the *rendered* page (typeset
-  equation, interactive tables) can only be seen by opening the file in a
-  real browser tab outside the sandbox. A sandboxed `<iframe srcdoc>`
-  preview is plausible future work; out of scope for v1.
+- **Built HTML is previewed in a sandboxed iframe.** Opening any `.html`
+  file in the editor shows a **Preview** toggle (`app/src/editor/editor-area.tsx`)
+  that renders it via `<iframe srcDoc sandbox="allow-scripts allow-popups">`
+  — no `allow-same-origin`, so the framed page cannot script the host app.
+  MathJax and DataTables execute, so the equation typesets and tables are
+  interactive (verified headless with the real sandbox attributes). Two
+  caveats: (1) the framed page pulls MathJax/DataTables/Bootstrap from their
+  CDNs **at view time**, so offline it degrades to the inline content — the
+  table rows still render, unstyled and non-interactive; (2) nothing leaves
+  the browser (no file export), so decision #21 still holds — the preview is
+  a render, not a download.
 - **`gitpython` imports without a `git` binary** only because
   `GIT_PYTHON_REFRESH=quiet` is set in `ensureLivemark`. Livemark plugins
   that actually shell out to `git` (`github`, `blog`) would fail at
