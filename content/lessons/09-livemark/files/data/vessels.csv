@@ -1,0 +1,4 @@
+vessel_id,name,vessel_class,length_m
+V-01,Coastal Trader,coaster,89.5
+V-02,Northern Star,bulk carrier,182.0
+V-03,Blue Horizon,container,294.1

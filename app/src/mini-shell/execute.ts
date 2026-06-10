@@ -4,7 +4,7 @@ import { BUILTINS, isBuiltin, type BuiltinResult } from './builtins';
 import { resolveCwd } from './path-util';
 import type { Pipeline, PipelineStage } from './parse';
 
-export const EXTERNAL_COMMANDS = ['frictionless', 'python'] as const;
+export const EXTERNAL_COMMANDS = ['frictionless', 'python', 'livemark'] as const;
 export type ExternalCommand = (typeof EXTERNAL_COMMANDS)[number];
 
 function isExternalCommand(name: string): name is ExternalCommand {
@@ -29,7 +29,12 @@ export interface ExecuteCtx {
   vfs: Vfs;
   /** Current working directory at start; may be updated via cwdAfter. */
   cwd: string;
-  bridge: (args: string[], stdin?: string, cwd?: string) => Promise<RunResult>;
+  bridge: (
+    args: string[],
+    stdin?: string,
+    cwd?: string,
+    program?: 'frictionless' | 'livemark',
+  ) => Promise<RunResult>;
   /** Run a snippet of Python in the Pyodide worker. */
   runPython: (code: string) => Promise<RunPythonBridgeResult>;
   /** Print stdout chunk to the terminal (no extra newline). */
@@ -106,10 +111,13 @@ async function runStage(
   }
   if (isExternalCommand(head)) {
     switch (head) {
-      case 'frictionless': {
+      case 'frictionless':
+      case 'livemark': {
+        // Both are Pyodide CLIs driven through the same bridge; the program
+        // name selects which (livemark is lazily installed on first use).
         const stdinStr = stdin.length > 0 ? dec.decode(stdin) : undefined;
         try {
-          const result = await ctx.bridge(argv.slice(1), stdinStr, ctx.cwd);
+          const result = await ctx.bridge(argv.slice(1), stdinStr, ctx.cwd, head);
           return {
             stdout: enc.encode(result.stdout),
             stderr: result.stderr,
@@ -117,7 +125,7 @@ async function runStage(
           };
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e);
-          return { stdout: EMPTY, stderr: `frictionless: ${msg}\n`, exitCode: 1 };
+          return { stdout: EMPTY, stderr: `${head}: ${msg}\n`, exitCode: 1 };
         }
       }
       case 'python':

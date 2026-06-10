@@ -1,6 +1,12 @@
 /// <reference lib="webworker" />
 
-import { FRICTIONLESS_VERSION, PYODIDE_INDEX_URL, PYODIDE_SCRIPT_URL } from './config';
+import {
+  FRICTIONLESS_VERSION,
+  LIVEMARK_VERSION,
+  MARKO_VERSION,
+  PYODIDE_INDEX_URL,
+  PYODIDE_SCRIPT_URL,
+} from './config';
 import type {
   FsErrorPayload,
   FsRequest,
@@ -91,6 +97,11 @@ async function load() {
     stage = 'frictionless-install';
     await pyodide.runPythonAsync(`
 import micropip
+# Pin marko 1.x BEFORE frictionless resolves it. frictionless needs marko>=1.0
+# (alone resolves to 2.x) but the Livemark lesson needs marko==1.*; marko
+# ${MARKO_VERSION} satisfies both and cannot be downgraded in place later
+# (micropip 0.9 has no reinstall). See docs/limitations.md.
+await micropip.install("marko==${MARKO_VERSION}")
 await micropip.install("frictionless==${FRICTIONLESS_VERSION}")
 `);
 
@@ -165,12 +176,15 @@ function installStdin(py: MinimalPyodide, stdin: string | undefined) {
 
 const CLI_WRAPPER = `
 import sys, runpy, traceback, os
-# __cli_args and __cli_cwd are injected into Python globals by the
-# host via pyodide.globals.set before each runPythonAsync call.
+# __cli_args, __cli_cwd and __cli_prog are injected into Python globals by the
+# host via pyodide.globals.set before each runPythonAsync call. Both the
+# frictionless and livemark CLIs expose a __main__ that reads sys.argv, so the
+# same wrapper drives either by module name.
 _args = [str(a) for a in list(__cli_args)]
 _cwd = str(__cli_cwd)
+_prog = str(__cli_prog)
 _old_argv = sys.argv
-sys.argv = ['frictionless'] + _args
+sys.argv = [_prog] + _args
 # Honour the shell's cwd so 'cd lesson/' before the CLI works.
 try:
     os.chdir(_cwd)
@@ -178,7 +192,7 @@ except Exception:
     pass
 try:
     try:
-        runpy.run_module('frictionless', run_name='__main__', alter_sys=True)
+        runpy.run_module(_prog, run_name='__main__', alter_sys=True)
         _exit_code = 0
     except SystemExit as _e:
         if _e.code is None:
@@ -196,6 +210,30 @@ finally:
 _exit_code
 `;
 
+// Livemark is installed lazily on first `livemark` invocation so the other
+// lessons never pay its cost. We install its BUILD dependencies but NOT its
+// server stack (livereload -> tornado has no wasm wheel in Pyodide), then
+// install livemark itself deps-free and stub the server modules so importing
+// it (whose __init__ imports .server) succeeds. See docs/limitations.md.
+let livemarkReady = false;
+async function ensureLivemark(py: MinimalPyodide): Promise<void> {
+  if (livemarkReady) return;
+  await py.runPythonAsync(`
+import micropip, sys, types, os
+await micropip.install([
+    "pyyaml", "jinja2", "pyquery==1.*", "deepmerge", "gitpython",
+    "jsonschema", "typer", "giturlparse", "cached-property",
+    "docstring-parser", "attrs",
+])
+await micropip.install("livemark==${LIVEMARK_VERSION}", deps=False)
+for _n in ["tornado", "tornado.ioloop", "tornado.web", "tornado.websocket", "livereload"]:
+    sys.modules.setdefault(_n, types.ModuleType(_n))
+sys.modules["livereload"].Server = type("Server", (), {})
+os.environ.setdefault("GIT_PYTHON_REFRESH", "quiet")  # no git binary under Pyodide
+`);
+  livemarkReady = true;
+}
+
 async function runCli(req: RunRequest) {
   if (!pyodide) {
     post({
@@ -207,10 +245,31 @@ async function runCli(req: RunRequest) {
     });
     return;
   }
+  const program = req.program ?? 'frictionless';
+  // First livemark call installs the toolchain (a few seconds) — do this
+  // before installing the stdout/stderr capture so install noise doesn't leak
+  // into the command's output, and tell the user why the pause happened.
+  let notice = '';
+  if (program === 'livemark' && !livemarkReady) {
+    try {
+      await ensureLivemark(pyodide);
+      notice = `livemark: installed on first use (livemark ${LIVEMARK_VERSION}); cached for this session\n`;
+    } catch (e) {
+      post({
+        type: 'run-result',
+        id: req.id,
+        stdout: '',
+        stderr: `livemark: install failed: ${e instanceof Error ? e.message : String(e)}\n`,
+        exitCode: 1,
+      });
+      return;
+    }
+  }
   const cap = installCapture(pyodide);
   installStdin(pyodide, req.stdin);
   pyodide.globals.set('__cli_args', req.args);
   pyodide.globals.set('__cli_cwd', req.cwd ?? WORKSPACE);
+  pyodide.globals.set('__cli_prog', program);
   let exitCode = 1;
   try {
     const result = await pyodide.runPythonAsync(CLI_WRAPPER);
@@ -223,10 +282,12 @@ async function runCli(req: RunRequest) {
     try {
       pyodide.globals.delete('__cli_args');
       pyodide.globals.delete('__cli_cwd');
+      pyodide.globals.delete('__cli_prog');
     } catch {
       // ignore
     }
   }
+  if (notice) cap.stderr = notice + cap.stderr;
   // CLI may have written files; sync IDBFS so they persist, and notify.
   try {
     await syncfs(pyodide, false);

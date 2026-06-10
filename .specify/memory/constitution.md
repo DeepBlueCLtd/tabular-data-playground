@@ -1,27 +1,34 @@
 <!--
 SYNC IMPACT REPORT
-Version change: 1.0.0 → 2.0.0
-Bump rationale: Principle VI redefined incompatibly. The "Pin and Freeze"
-principle previously required the artefact to freeze at v1.0 with no
-further maintenance. The project is not in production and is still
-under active development; the v1.0 tag is a phasing milestone, not a
-freeze. Pinning for reproducibility of any tagged build is retained;
-the "no further work after v1.0" framing is removed. Backwards
-compatibility is now scoped explicitly to external Frictionless Data
-artefacts only.
-Modified principles:
-  - VI. Pin and Freeze → VI. Pin Versions, Iterate Forward
-Added sections: n/a
-Removed sections: n/a
+Version change: 2.0.0 → 2.1.0
+Bump rationale: Technology Constraints materially expanded (MINOR) — the
+"Python runtime" slot now admits `livemark`, the Frictionless publishing
+tool used by lesson 9 (Publish with Livemark). It is pinned and installed
+lazily on first use of the new `livemark` command (never at startup), with
+its server stack (livereload/tornado) stubbed and `marko` pinned to 1.x so
+it coexists with frictionless. No principle changed; no Definition of Done
+change. Adding this runtime dependency is, per the section's own rule, an
+amendment rather than a plain PR — recorded here for maintainer sign-off.
+Modified principles: none.
+Added sections: none (Technology Constraints "Python runtime" bullet expanded).
+Removed sections: none.
 Templates requiring updates:
   - .specify/templates/plan-template.md — no edit required.
   - .specify/templates/spec-template.md — no edit required.
   - .specify/templates/tasks-template.md — no edit required.
   - .specify/templates/checklist-template.md — no edit required.
 Companion edits in same commit:
-  - spec.md §11 Phase 3 — drop "frozen as-is" disposition.
-  - spec.md §13 — last DoD bullet softened from "frozen as a dated
-    reference" to a neutral milestone.
+  - spec.md §8 — curriculum extended to nine lessons (Livemark capstone).
+  - spec.md §13 — DoD "eight lessons" → "nine lessons".
+  - README.md — Livemark 0.110.8 and marko 1.3.1 pins recorded.
+  - docs/limitations.md — Livemark-under-Pyodide sharp edges enumerated.
+  - app/src/pyodide/{config,worker,protocol,pyodide-context,pyodide-provider}.ts(x),
+    app/src/mini-shell/{execute,shell-runner}.* — lazy `livemark` command.
+
+Previous amendment (1.0.0 → 2.0.0): Principle VI redefined from "Pin and
+Freeze" to "Pin Versions, Iterate Forward" — the v1.0 tag is a phasing
+milestone, not a freeze; backwards compatibility scoped to external
+Frictionless Data artefacts only.
 Follow-up TODOs: None.
 -->
 
@@ -147,6 +154,12 @@ The v1 stack is fixed by the spec and is part of the constitutional surface
 - **Terminal**: `xterm.js` + `xterm-addon-fit` + `xterm-addon-web-links`.
 - **Python runtime**: Pyodide loaded from CDN, version pinned;
   `frictionless` installed via `micropip` after page paint (hybrid load).
+  `livemark` (the Frictionless publishing tool, lesson 9) is pinned and
+  installed **lazily** on first use of the `livemark` command — never at
+  startup — with its server stack (`livereload`/`tornado`) stubbed and
+  `marko` pinned to 1.x so it coexists with frictionless. Versions live in
+  `app/src/pyodide/config.ts` and the README; sharp edges in
+  `docs/limitations.md`.
 - **State**: Zustand or React context (Redux is overkill at this scope).
 - **Tests**: Vitest (unit), Playwright (Chromium-only smoke against the
   built site).
@@ -225,4 +238,4 @@ Complexity Tracking section before `/speckit-tasks` runs.
 the constitution and the codebase continue to evolve while the project
 is in its pre-production research phase.
 
-**Version**: 2.0.0 | **Ratified**: 2026-05-08 | **Last Amended**: 2026-05-11
+**Version**: 2.1.0 | **Ratified**: 2026-05-08 | **Last Amended**: 2026-06-10
