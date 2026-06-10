@@ -6,6 +6,9 @@ export interface LoadRequest {
   type: 'load';
 }
 
+/** CLIs the worker can drive via runpy. Both run through the same wrapper. */
+export type CliProgram = 'frictionless' | 'livemark';
+
 export interface RunRequest {
   type: 'run';
   id: string;
@@ -13,6 +16,11 @@ export interface RunRequest {
   stdin?: string;
   /** Working directory for the CLI invocation. Defaults to /workspace. */
   cwd?: string;
+  /**
+   * Which CLI to invoke. Defaults to 'frictionless'. 'livemark' triggers a
+   * one-time lazy install on first use (see worker `ensureLivemark`).
+   */
+  program?: CliProgram;
 }
 
 export interface RunPythonRequest {

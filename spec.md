@@ -228,7 +228,7 @@ The lesson index is built at compile time from `meta.json` files, so adding a le
 
 ## 8. Curriculum (v1)
 
-Eight lessons covering the full ecosystem arc. Order is the recommended pedagogical sequence; lessons are self-contained enough that an experienced user can jump.
+Nine lessons covering the full ecosystem arc, closing with a publishing capstone. Order is the recommended pedagogical sequence; lessons are self-contained enough that an experienced user can jump.
 
 |#|Title                        |Core concept                                                  |Frictionless features touched                         |
 |-|-----------------------------|--------------------------------------------------------------|------------------------------------------------------|
@@ -240,6 +240,7 @@ Eight lessons covering the full ecosystem arc. Order is the recommended pedagogi
 |6|**Transform**                |A small extract-transform-load: read, reshape, write          |`frictionless transform` (or pipeline)                |
 |7|**Inquiry**                  |Validate many resources in one go                             |Inquiry spec, `frictionless validate <inquiry.json>`  |
 |8|**Publish & consume**        |Read a remote `datapackage.json`, work with its resources     |Remote package URL, `frictionless describe <url>`     |
+|9|**Publish with Livemark**    |Build a static HTML document embedding narrative, an equation, and live CSV tables from a sister folder|Livemark `build`, the `table` directive over Frictionless resources|
 
 **Critical analysis of this curriculum:**
 
@@ -456,7 +457,7 @@ No new decisions; this revision brought the spec body into line with the decisio
 ## 13. Definition of done (v1.0)
 
 - [ ] GitHub Pages site reachable, loads in <8 s on broadband cold cache
-- [ ] All eight lessons authored, rendering, and runnable end-to-end without errors
+- [ ] All nine lessons authored, rendering, and runnable end-to-end without errors
 - [ ] Each lesson has a populated **Notes & Observations** section recording what worked, what surprised, what required workarounds
 - [ ] Terminal supports the full feature set in §6 (builtins, pipes, redirection, Pyodide commands)
 - [ ] Workspace persists across reload; Reset works (modal confirmed)

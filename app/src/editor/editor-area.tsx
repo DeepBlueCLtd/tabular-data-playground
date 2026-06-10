@@ -1,9 +1,10 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import type { Monaco } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { useTheme } from '@/theme/use-theme';
 import { useVfs } from '@/fs/use-vfs';
+import { useFsChanged } from '@/fs/use-fs-changed';
 import { MONACO_CDN_VS_URL } from './config';
 import { registerJsonSchemas } from './json-schemas';
 import { languageForPath } from './language';
@@ -72,12 +73,86 @@ function MonacoPane({ tab, reportCursor, onChange }: MonacoPaneProps) {
   );
 }
 
+function isHtmlPath(path: string): boolean {
+  return /\.html?$/i.test(path);
+}
+
+/**
+ * Renders an HTML file in a sandboxed iframe. Reads the file fresh from the
+ * VFS (the source of truth — the file may have just been rebuilt by
+ * `livemark build`) and re-reads on any workspace change. The iframe is
+ * sandboxed to `allow-scripts` only: scripts (MathJax, DataTables) run, but
+ * the framed page cannot reach back into the host app (no allow-same-origin).
+ * Livemark's CDN assets load at view time; offline the page degrades to its
+ * inline content (the table rows are embedded, so they still show).
+ */
+function HtmlPreviewPane({ path }: { path: string }) {
+  const { vfs } = useVfs();
+  const [html, setHtml] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    if (!vfs) return;
+    try {
+      const content = await vfs.readFile(path);
+      // Only swap srcDoc when the bytes actually changed, so unrelated FS
+      // events don't reload the iframe (and re-fetch its CDN assets).
+      setHtml((prev) => (prev === content ? prev : content));
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }, [vfs, path]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+  useFsChanged(() => {
+    void load();
+  });
+
+  return (
+    <div className="flex h-full flex-col">
+      <div className="flex h-7 items-center justify-between border-b border-border bg-muted/40 px-3 text-xs text-muted-foreground">
+        <span className="truncate">preview: {path.split('/').pop()}</span>
+        <button
+          type="button"
+          onClick={() => void load()}
+          className="rounded px-1 hover:bg-muted"
+          aria-label="Refresh preview"
+        >
+          ↻ Refresh
+        </button>
+      </div>
+      <div className="flex-1 overflow-hidden bg-white">
+        {error ? (
+          <div className="p-4 text-sm text-destructive">Preview unavailable: {error}</div>
+        ) : html === null ? (
+          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+            Loading preview…
+          </div>
+        ) : (
+          <iframe
+            title={`Preview of ${path}`}
+            srcDoc={html}
+            sandbox="allow-scripts allow-popups"
+            referrerPolicy="no-referrer"
+            className="h-full w-full border-0 bg-white"
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function EditorArea() {
   const { tabs, activeTabId, open, close, setActive, setBuffer } = useEditorTabs();
   const { vfs } = useVfs();
   const { setCursor } = useEditorFocus();
   const [loaderConfigured, setLoaderConfigured] = useState(false);
   const [secondaryTabId, setSecondaryTabId] = useState<string | null>(null);
+  // Ids of HTML tabs currently showing the rendered preview instead of source.
+  const [previewTabs, setPreviewTabs] = useState<Set<string>>(() => new Set());
 
   useEffect(() => {
     if (activeTabId === null) setCursor(null);
@@ -96,8 +171,39 @@ export function EditorArea() {
     }
   }, [tabs, secondaryTabId]);
 
+  // Forget preview state for tabs that have closed.
+  useEffect(() => {
+    setPreviewTabs((prev) => {
+      const next = new Set([...prev].filter((id) => tabs.some((t) => t.id === id)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [tabs]);
+
   const activeTab = tabs.find((t) => t.id === activeTabId) ?? null;
   const secondaryTab = (secondaryTabId && tabs.find((t) => t.id === secondaryTabId)) || null;
+  const activeIsHtml = activeTab ? isHtmlPath(activeTab.path) : false;
+  const activePreviewing = activeTab ? previewTabs.has(activeTab.id) : false;
+
+  function togglePreview(tabId: string) {
+    setPreviewTabs((prev) => {
+      const next = new Set(prev);
+      if (next.has(tabId)) next.delete(tabId);
+      else next.add(tabId);
+      return next;
+    });
+  }
+
+  const primaryPane = activeTab ? (
+    activeIsHtml && activePreviewing ? (
+      <HtmlPreviewPane path={activeTab.path} />
+    ) : (
+      <MonacoPane
+        tab={activeTab}
+        reportCursor
+        onChange={(value) => setBuffer(activeTab.id, value)}
+      />
+    )
+  ) : null;
 
   function cycleSecondaryTab() {
     if (tabs.length === 0) return;
@@ -161,7 +267,17 @@ export function EditorArea() {
           </ul>
         )}
         {tabs.length > 0 && (
-          <div className="flex items-center pr-2">
+          <div className="flex items-center gap-2 pr-2">
+            {activeIsHtml && (
+              <button
+                type="button"
+                onClick={() => activeTabId && togglePreview(activeTabId)}
+                className="rounded border border-border bg-muted/40 px-2 py-0.5 text-xs hover:bg-muted"
+                aria-pressed={activePreviewing}
+              >
+                {activePreviewing ? 'Code' : 'Preview'}
+              </button>
+            )}
             {secondaryTabId === null ? (
               <button
                 type="button"
@@ -188,11 +304,7 @@ export function EditorArea() {
           secondaryTab ? (
             <PanelGroup direction="horizontal" autoSaveId="fde-editor-split">
               <Panel defaultSize={50} minSize={20}>
-                <MonacoPane
-                  tab={activeTab}
-                  reportCursor
-                  onChange={(value) => setBuffer(activeTab.id, value)}
-                />
+                {primaryPane}
               </Panel>
               <PanelResizeHandle className="w-px bg-border transition-colors hover:bg-ring" />
               <Panel defaultSize={50} minSize={20}>
@@ -219,11 +331,7 @@ export function EditorArea() {
               </Panel>
             </PanelGroup>
           ) : (
-            <MonacoPane
-              tab={activeTab}
-              reportCursor
-              onChange={(value) => setBuffer(activeTab.id, value)}
-            />
+            primaryPane
           )
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-sm text-muted-foreground">

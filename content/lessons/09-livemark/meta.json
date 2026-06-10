@@ -1,0 +1,7 @@
+{
+  "title": "Publish with Livemark",
+  "slug": "09-livemark",
+  "order": 9,
+  "summary": "Use Frictionless Livemark to build a static HTML document — narrative, an equation, and live CSV tables read from a sister folder — entirely in the browser.",
+  "estimatedMinutes": 20
+}

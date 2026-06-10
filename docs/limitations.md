@@ -352,6 +352,63 @@ Many third-party tutorials cite
 live at authoring time. If it goes away, swap to another
 `datasets/*` package on GitHub.
 
+### Lesson 9 (Livemark) — a server tool coaxed into the browser
+
+Livemark (`livemark 0.110.8`) is a static-site generator, not a
+`frictionless` sub-command. Getting `livemark build` to run under
+Pyodide 0.27.7 surfaced several sharp edges, all accepted for v1:
+
+- **`livemark` is a lazily-installed command, not part of startup.**
+  The worker installs Livemark on the *first* `livemark` invocation
+  (`ensureLivemark` in `app/src/pyodide/worker.ts`) so the other eight
+  lessons pay no download/latency cost. The first build therefore pauses
+  for a few seconds; subsequent calls are instant (cached per session,
+  lost on reload).
+- **The server stack is stubbed, not installed.** `livemark`'s package
+  `__init__` imports `.server`, which imports `livereload` →
+  `tornado`. `tornado` ships **no** pure-Python / wasm wheel (only
+  platform wheels + an sdist), so micropip cannot install it. The worker
+  registers dummy `tornado` / `livereload` modules in `sys.modules` so
+  the import resolves. Consequence: **`livemark start` (the live-reload
+  dev server) does not work** — only `livemark build`. A browser sandbox
+  can't host a socket server anyway.
+- **`marko` is pinned to 1.x at startup.** `frictionless` requires
+  `marko>=1.0` (which alone resolves to 2.x); `livemark` requires
+  `marko==1.*`. They coexist only on `marko 1.3.1`, and it must be
+  installed **before** frictionless — micropip 0.9 (Pyodide 0.27.7) has
+  no `reinstall`/downgrade. The worker installs `marko==1.3.1` ahead of
+  `frictionless` for every session. Harmless to frictionless (1.3.1
+  satisfies `>=1.0`); recorded as a pin in
+  `app/src/pyodide/config.ts` and the README.
+- **Table directive key is `data:`, not `path:`.** A `path:` key yields
+  `scheme "None" is not supported` (the resource source is empty). The
+  lesson and its starter `report.md` use `data:`.
+- **Table paths resolve against the build cwd, not the document.**
+  `livemark build` must be run from the document's own folder for a
+  `../data/foo.csv` path to resolve. The lesson `cd`s into `report/`
+  first; building from the workspace root fails.
+- **No built-in math renderer, and Markdown eats LaTeX escapes.**
+  Equations need MathJax injected via raw HTML (Livemark passes raw HTML
+  through). The Markdown parser runs first and strips backslash-
+  *punctuation* macros (`\,`, `\!`); backslash-*letter* macros
+  (`\cdot`, `\frac`, `\log`) survive. The lesson equation uses only the
+  latter.
+- **Built HTML is previewed in a sandboxed iframe.** Opening any `.html`
+  file in the editor shows a **Preview** toggle (`app/src/editor/editor-area.tsx`)
+  that renders it via `<iframe srcDoc sandbox="allow-scripts allow-popups">`
+  — no `allow-same-origin`, so the framed page cannot script the host app.
+  MathJax and DataTables execute, so the equation typesets and tables are
+  interactive (verified headless with the real sandbox attributes). Two
+  caveats: (1) the framed page pulls MathJax/DataTables/Bootstrap from their
+  CDNs **at view time**, so offline it degrades to the inline content — the
+  table rows still render, unstyled and non-interactive; (2) nothing leaves
+  the browser (no file export), so decision #21 still holds — the preview is
+  a render, not a download.
+- **`gitpython` imports without a `git` binary** only because
+  `GIT_PYTHON_REFRESH=quiet` is set in `ensureLivemark`. Livemark plugins
+  that actually shell out to `git` (`github`, `blog`) would fail at
+  runtime; none are used by this lesson.
+
 ## Cross-cutting (carried from `spec.md` §6.5 / §10)
 
 - **No SharedArrayBuffer (cross-origin isolation) on GitHub

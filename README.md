@@ -79,12 +79,14 @@ risks are catalogued in `docs/limitations.md`.
 
 The deployed playground is a research artefact: pinned and frozen
 on purpose (Constitution Principle VI). The pins are the contract
-the eight lessons in `content/lessons/` were authored against.
+the lessons in `content/lessons/` were authored against.
 
 | Component | Version | Source |
 |-----------|---------|--------|
 | Pyodide | `0.27.7` | `app/src/pyodide/config.ts` (`PYODIDE_VERSION`); served from `https://cdn.jsdelivr.net/pyodide/v0.27.7/full/`. |
 | Frictionless | `5.19.0` | `app/src/pyodide/config.ts` (`FRICTIONLESS_VERSION`); installed at runtime via `micropip.install("frictionless==5.19.0")` in the Pyodide worker. |
+| Livemark | `0.110.8` | `app/src/pyodide/config.ts` (`LIVEMARK_VERSION`); lazily installed (server stack stubbed) on first `livemark` command — see lesson 9 and `docs/limitations.md`. |
+| marko | `1.3.1` | `app/src/pyodide/config.ts` (`MARKO_VERSION`); installed before frictionless so `frictionless` (`marko>=1.0`) and `livemark` (`marko==1.*`) can coexist. |
 | Data Package JSON Schema | snapshot 2026-05-09 | Bundled from `https://specs.frictionlessdata.io/schemas/data-package.json` to `app/src/editor/schemas/data-package.json`. |
 | Table Schema JSON Schema | snapshot 2026-05-09 | Bundled from `https://specs.frictionlessdata.io/schemas/table-schema.json` to `app/src/editor/schemas/table-schema.json`. |
 | Table Dialect JSON Schema | snapshot 2026-05-09 (v2) | Bundled from `https://datapackage.org/profiles/2.0/tabledialect.json` to `app/src/editor/schemas/table-dialect.json` (`specs.frictionlessdata.io` returns 404 for dialect; `datapackage.org` is the canonical home). |

@@ -54,7 +54,7 @@ export function useShellRunner() {
         const { cwdAfter } = await executePipeline(pipeline, {
           vfs,
           cwd: cwdRef.current,
-          bridge: (args, stdin, cwd) => run(args, stdin, cwd),
+          bridge: (args, stdin, cwd, program) => run(args, stdin, cwd, program),
           runPython: (code) => runPython(code),
           print: (text) => api.print(text),
           printErr: (text) => api.print(text),
