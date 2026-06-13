@@ -121,6 +121,37 @@ scraping).
 
 ---
 
+### User Story 4 - Prove the structural verification gate (round-trip + validate) (Priority: P2)
+
+The user runs a documented step that takes the typed objects, serialises them
+back out to XML, validates the result against the sonar XSD, and confirms the
+round-trip is faithful (the re-emitted document is schema-valid and equivalent
+to the input). This demonstrates that the generated bindings can be trusted as
+the data contract — *conformant by construction* — rather than merely readable.
+
+**Why this priority**: This is the central de-risking question for using
+schema-first bindings as a production data contract: can the typed objects
+serialise back to schema-valid XML and round-trip without loss? Proving it
+cheaply, on a mock schema, is high-leverage and depends only on P1 and P2.
+
+**Independent Test**: With generated types and a valid sample document, run
+the documented step and confirm the re-serialised XML validates against the
+XSD and is equivalent to the original input (a round-trip diff is empty or
+explained).
+
+**Acceptance Scenarios**:
+
+1. **Given** typed objects parsed from a valid sample, **When** they are
+   serialised back to XML, **Then** the output validates against the sonar
+   XSD.
+2. **Given** the original sample and the re-serialised output, **When** they
+   are compared, **Then** they are equivalent (any differences are limited to
+   insignificant formatting and are explained, not silent data loss).
+3. **Given** the round-trip step, **When** it is run twice, **Then** it
+   produces identical results (deterministic).
+
+---
+
 ### Edge Cases
 
 - What happens when the Codespace is reopened later (warm start) — does it
@@ -168,6 +199,11 @@ scraping).
 - **FR-008**: When given a non-conforming XML document, the demo program MUST
   surface a clear, understandable error rather than producing incorrect
   output silently.
+- **FR-008a**: The demonstration MUST include a structural verification step
+  that serialises the typed objects back to XML, validates that output against
+  the sonar XSD, and confirms the round-trip is faithful (re-emitted document
+  is schema-valid and equivalent to the input, with any differences explained
+  rather than silent).
 - **FR-009**: The repository MUST document the end-to-end demo walkthrough
   (open Codespace → generate types → run demo) in a single discoverable place
   so a colleague can reproduce it unaided.
@@ -195,7 +231,9 @@ scraping).
   named classes/types mirroring the schema's entities, fields, and
   enumerations, used for type-safe access in Python.
 - **Demo Program**: The short Python program that consumes the generated
-  types against a sample document and emits a summary.
+  types against a sample document, emits a summary, and performs the
+  structural verification step (serialise back to XML, validate against the
+  XSD, round-trip check).
 - **Codespace Environment Definition**: The configuration that makes the
   repository open into a ready-to-run development environment.
 - **Notes & Observations Record**: The captured findings about the
@@ -223,6 +261,10 @@ scraping).
   correct summary derived from typed field access on the first run.
 - **SC-005**: Loading the deliberately invalid sample produces a clear,
   understandable error and never a silently-wrong summary.
+- **SC-005a**: Typed objects parsed from the valid sample serialise back to
+  XML that validates against the sonar XSD and round-trips equivalently to the
+  input (round-trip diff is empty or limited to explained, insignificant
+  formatting).
 - **SC-006**: Re-running the full walkthrough (build, generate, run) twice
   yields identical generated types and identical demo output (reproducible).
 - **SC-007**: The experiment's Notes & Observations record names at least the
@@ -235,6 +277,14 @@ scraping).
   from the Frictionless Data Explorer SPA and does not become a curriculum
   lesson within v1 (it may inform a future fitness-assessment leg, but that
   is out of scope here).
+- The experiment is a lean, reversible de-risking pilot for the schema-driven
+  XML production direction (xsdata generation, annotations-as-docstrings,
+  typed domain objects, and the structural round-trip/validate gate). It
+  deliberately excludes the wider production line: no calculation-to-object
+  mapping, no migration diff against existing hand-rolled output (no such
+  files are in hand here), no Frictionless involvement, and no additional
+  language bindings — in particular the XSD → JSON Schema path for JS/TS
+  consumers is out of scope for this demo.
 - No real or classified warship data exists or is required; a synthetic-but-
   realistic XSD and sample documents will be authored for the demo, consistent
   with the project's stance that domain data is non-sensitive and synthetic.

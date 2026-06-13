@@ -40,5 +40,10 @@
 - The source XSD and sample documents do not yet exist in the repository;
   FR-003 / FR-004 make authoring synthetic-but-realistic versions an explicit
   deliverable, consistent with the project's synthetic-domain-data stance.
+- Scope refinement (post-review): the demo now also proves the structural
+  verification gate — serialise typed objects back to XML, validate against
+  the XSD, and round-trip check (US4 / FR-008a / SC-005a) — to de-risk
+  "conformant by construction". The XSD → JSON Schema path for JS/TS
+  consumers was deliberately left out of scope to keep the pilot lean.
 - Items marked incomplete would require spec updates before `/speckit-clarify`
   or `/speckit-plan`. All items currently pass.
