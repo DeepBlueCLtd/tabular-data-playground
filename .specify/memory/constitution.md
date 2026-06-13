@@ -1,16 +1,17 @@
 <!--
 SYNC IMPACT REPORT
-Version change: 2.0.0 → 2.1.0
-Bump rationale: Technology Constraints materially expanded (MINOR) — the
-"Python runtime" slot now admits `livemark`, the Frictionless publishing
-tool used by lesson 9 (Publish with Livemark). It is pinned and installed
-lazily on first use of the new `livemark` command (never at startup), with
-its server stack (livereload/tornado) stubbed and `marko` pinned to 1.x so
-it coexists with frictionless. No principle changed; no Definition of Done
-change. Adding this runtime dependency is, per the section's own rule, an
-amendment rather than a plain PR — recorded here for maintainer sign-off.
+Version change: 2.1.0 → 2.2.0
+Bump rationale: New section added (MINOR) — "Experiments & Spikes" carves out
+a category of standalone, non-shipping research spikes (e.g. the Codespaces
+XSD→xsdata sonar demo, feature 049) that MAY use tooling outside the fixed SPA
+stack, provided they are isolated from the shipped artefact and pin their own
+dependencies. This formalises, rather than widens, the existing Phase 0 spike
+precedent: the SPA's Technology Constraints are unchanged and continue to
+require an amendment for any change to the shipped stack. No principle changed;
+no Definition of Done change.
 Modified principles: none.
-Added sections: none (Technology Constraints "Python runtime" bullet expanded).
+Added sections: "Experiments & Spikes" (new top-level section after Technology
+Constraints). Technology Constraints gains a closing cross-reference to it.
 Removed sections: none.
 Templates requiring updates:
   - .specify/templates/plan-template.md — no edit required.
@@ -18,12 +19,11 @@ Templates requiring updates:
   - .specify/templates/tasks-template.md — no edit required.
   - .specify/templates/checklist-template.md — no edit required.
 Companion edits in same commit:
-  - spec.md §8 — curriculum extended to nine lessons (Livemark capstone).
-  - spec.md §13 — DoD "eight lessons" → "nine lessons".
-  - README.md — Livemark 0.110.8 and marko 1.3.1 pins recorded.
-  - docs/limitations.md — Livemark-under-Pyodide sharp edges enumerated.
-  - app/src/pyodide/{config,worker,protocol,pyodide-context,pyodide-provider}.ts(x),
-    app/src/mini-shell/{execute,shell-runner}.* — lazy `livemark` command.
+  - specs/049-codespaces-xsd-xsdata-demo/plan.md — Constitution Check references
+    the new carve-out instead of flagging an open Technology-Constraints question.
+
+Previous amendment (2.0.0 → 2.1.0): Technology Constraints "Python runtime" slot
+expanded to admit `livemark` (lesson 9), pinned and lazily installed.
 
 Previous amendment (1.0.0 → 2.0.0): Principle VI redefined from "Pin and
 Freeze" to "Pin Versions, Iterate Forward" — the v1.0 tag is a phasing
@@ -175,6 +175,39 @@ Substitutions within these slots (e.g. `dockview` instead of `react-mosaic`)
 are permitted and not amendments. Adding a new infrastructural dependency,
 introducing a backend, or replacing a pinned runtime IS an amendment.
 
+This section governs the **shipped SPA**. Standalone research spikes that ship
+nothing into the artefact are governed by "Experiments & Spikes" below, not by
+these slots.
+
+## Experiments & Spikes
+
+The project's method is build-it-to-learn-it (Principle I), and spec.md §1
+frames the work as assessing several data-validation "legs" of which
+Frictionless is one. Some of that learning happens in **standalone spikes** that
+are deliberately *not* part of the shipped SPA — the Phase 0 de-risking spikes
+were the first instance; the Codespaces XSD→`xsdata` sonar-performance demo
+(feature 049) is another.
+
+An experiment/spike MAY use tooling outside the fixed SPA stack in Technology
+Constraints — including a different language or runtime (e.g. a Python +
+`xsdata` toolchain, a dev container) — **without** a Technology-Constraints
+amendment, provided ALL of the following hold:
+
+1. **Isolation** — it lives in its own directory (e.g. `experiments/<slug>/`)
+   and ships nothing into the SPA or the GitHub Pages site. It MUST NOT change
+   the SPA's runtime, build, or dependency surface.
+2. **Self-contained pinning** — it pins and records its own dependencies
+   (Principle VI applies in full within the spike).
+3. **Honest limitations** — sharp edges it surfaces are recorded in
+   `docs/limitations.md` (Principle VII) like any other.
+4. **No backend/telemetry** — Principle IV still holds; a dev container is a
+   developer environment, not a deployed backend.
+
+A spike that later wants to feed tooling *into* the shipped artefact crosses
+back under Technology Constraints and THEN requires an amendment. This carve-out
+formalises existing practice; it does not relax the rules governing the shipped
+stack.
+
 ## Development Workflow & Quality Gates
 
 **Phase 0 gate.** Before committing to the full build, Spike A (Pyodide +
@@ -238,4 +271,4 @@ Complexity Tracking section before `/speckit-tasks` runs.
 the constitution and the codebase continue to evolve while the project
 is in its pre-production research phase.
 
-**Version**: 2.1.0 | **Ratified**: 2026-05-08 | **Last Amended**: 2026-06-10
+**Version**: 2.2.0 | **Ratified**: 2026-05-08 | **Last Amended**: 2026-06-13

@@ -61,15 +61,16 @@ Constitution v2.1.0. Per-feature gates from the Development Workflow section:
    can't model on this schema, round-trip formatting differences, Codespace/
    devcontainer caveats) are recorded in `docs/limitations.md` in this change.
 
-**Technology-Constraints note (flagged for maintainer sign-off):** the
-constitution's Technology Constraints fix the *shipped SPA* stack and say adding
-a new infrastructural dependency or runtime is an amendment. This experiment
-introduces a Python + xsdata toolchain, but it is standalone, non-shipping, and
-does not touch the SPA — analogous to the Phase 0 spikes. Treated here as a
-research spike outside the SPA stack rather than an amendment to it. See
-Complexity Tracking. If the maintainer prefers it formalised, a MINOR amendment
-adding an explicit "experiments/spikes" carve-out would do it — not done
-unprompted.
+**Technology-Constraints — covered by the Experiments & Spikes carve-out.** The
+constitution's Technology Constraints fix the *shipped SPA* stack. This
+experiment introduces a Python + xsdata toolchain, but it is standalone,
+non-shipping, and does not touch the SPA. Constitution **v2.2.0** added an
+**Experiments & Spikes** section that explicitly permits exactly this:
+isolated, self-pinned spikes outside the SPA stack with no backend/telemetry.
+This plan satisfies all four of that section's conditions (isolation in
+`experiments/`, self-contained pinning, limitations recorded, no backend), so
+no Technology-Constraints amendment is required. See Complexity Tracking for the
+rationale.
 
 ## Project Structure
 
@@ -130,5 +131,5 @@ XSD (the generated-artefacts discipline).
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|--------------------------------------|
-| New Python + `xsdata`/`lxml` toolchain not in the constitution's Technology Constraints | The spike's entire purpose is to evaluate the XSD→typed-binding leg the maintainer asked for; that requires xsdata and an XSD validator. The SPA's TS/Pyodide stack cannot demonstrate xsdata code generation. | Reusing the SPA's Pyodide runtime was rejected: xsdata code generation is a build-time developer workflow, not a browser runtime, and forcing it into Pyodide would distort the very thing being evaluated. Isolating it in `experiments/` with its own pinned deps keeps the SPA stack untouched. |
+| New Python + `xsdata`/`lxml` toolchain outside the SPA stack (now permitted by the v2.2.0 Experiments & Spikes carve-out) | The spike's entire purpose is to evaluate the XSD→typed-binding leg the maintainer asked for; that requires xsdata and an XSD validator. The SPA's TS/Pyodide stack cannot demonstrate xsdata code generation. | Reusing the SPA's Pyodide runtime was rejected: xsdata code generation is a build-time developer workflow, not a browser runtime, and forcing it into Pyodide would distort the very thing being evaluated. Isolating it in `experiments/` with its own pinned deps keeps the SPA stack untouched. |
 | `.devcontainer/` added at repo root | Codespaces requires the config at root to provision the environment (US1, FR-001). | A per-experiment devcontainer path is possible but the maintainer's goal is "open *this repo* in a Codespace"; root config is the zero-friction path and is inert for SPA work. |
