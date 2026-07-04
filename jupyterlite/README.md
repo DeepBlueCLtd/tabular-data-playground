@@ -16,21 +16,20 @@ runtime.
 
 ## Single reproducible build command
 
-From the **repository root**:
+From the **`jupyterlite/` directory**:
 
 ```bash
+# From the repository root:
 pip install -r jupyterlite/requirements.txt
-jupyter lite build \
-  --config jupyterlite/jupyter_lite_config.json \
-  --output-dir jupyterlite/_output
+cd jupyterlite
+jupyter lite build --output-dir _output
 ```
 
 The output is written to `jupyterlite/_output/`. Serve locally with:
 
 ```bash
-jupyter lite serve \
-  --config jupyterlite/jupyter_lite_config.json \
-  --output-dir jupyterlite/_output
+# From jupyterlite/:
+jupyter lite serve --output-dir _output
 ```
 
 Then open `http://localhost:8000` (or the URL printed in the terminal),
@@ -39,12 +38,12 @@ render inline.
 
 ## Base URL parameterisation
 
-For deployment under a sub-path, pass `--base-url` to the build command:
+For deployment under a sub-path, pass `--base-url` to the build command
+(run from the `jupyterlite/` directory):
 
 ```bash
 jupyter lite build \
-  --config jupyterlite/jupyter_lite_config.json \
-  --output-dir jupyterlite/_output \
+  --output-dir _output \
   --base-url /tabular-data-playground/jupyterlite/
 ```
 

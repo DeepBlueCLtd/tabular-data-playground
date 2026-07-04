@@ -70,17 +70,16 @@ jobs:
         run: pip install -r jupyterlite/requirements.txt
 
       - name: Build JupyterLite demo (served under /jupyterlite/)
-        working-directory: ${{ github.workspace }}
+        working-directory: ${{ github.workspace }}/jupyterlite
         run: |
           jupyter lite build \
-            --config jupyterlite/jupyter_lite_config.json \
-            --output-dir jupyterlite/_output \
+            --output-dir _output \
             --base-url /tabular-data-playground/jupyterlite/
 
       - name: Verify JupyterLite build produced output
-        working-directory: ${{ github.workspace }}
+        working-directory: ${{ github.workspace }}/jupyterlite
         run: |
-          test -d jupyterlite/_output && test -n "$(ls -A jupyterlite/_output)"
+          test -d _output && test -n "$(ls -A _output)"
 
       - name: Assemble published site (welcome + slides + IDE + jupyterlite + sample-package)
         working-directory: ${{ github.workspace }}

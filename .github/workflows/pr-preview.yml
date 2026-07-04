@@ -72,15 +72,16 @@ jobs:
         run: pip install -r jupyterlite/requirements.txt
 
       - name: Build JupyterLite demo with PR-scoped base path
+        working-directory: jupyterlite
         run: |
           jupyter lite build \
-            --config jupyterlite/jupyter_lite_config.json \
-            --output-dir jupyterlite/_output \
+            --output-dir _output \
             --base-url /tabular-data-playground/pr-preview/pr-${{ github.event.pull_request.number }}/jupyterlite/
 
       - name: Verify JupyterLite build produced output
+        working-directory: jupyterlite
         run: |
-          test -d jupyterlite/_output && test -n "$(ls -A jupyterlite/_output)"
+          test -d _output && test -n "$(ls -A _output)"
 
       - name: Assemble preview site (welcome + slides + IDE + jupyterlite + sample-package)
         run: |
