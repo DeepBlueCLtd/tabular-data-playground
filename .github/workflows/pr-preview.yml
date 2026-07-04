@@ -6,6 +6,7 @@ name: PR Preview to GitHub Pages
 #   /pr-preview/pr-<N>/             → welcome page (web/index.html)
 #   /pr-preview/pr-<N>/slides/      → reveal.js findings deck
 #   /pr-preview/pr-<N>/playground/  → the Vite IDE (PR-scoped base path)
+#   /pr-preview/pr-<N>/jupyterlite/ → JupyterLite demo (PR-scoped base path)
 #   /pr-preview/pr-<N>/sample-package/ → lesson 8's package, kept at the
 #                                        preview root to mirror production
 # A single sticky comment (idempotent via the marker below) links to
@@ -62,7 +63,27 @@ jobs:
           VITE_BASE_PATH: /tabular-data-playground/pr-preview/pr-${{ github.event.pull_request.number }}/playground/
         run: pnpm run build
 
-      - name: Assemble preview site (welcome + slides + IDE + sample-package)
+      - name: Set up Python for JupyterLite build
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install JupyterLite build dependencies
+        run: pip install -r jupyterlite/requirements.txt
+
+      - name: Build JupyterLite demo with PR-scoped base path
+        working-directory: jupyterlite
+        run: |
+          jupyter lite build \
+            --output-dir _output \
+            --base-url /tabular-data-playground/pr-preview/pr-${{ github.event.pull_request.number }}/jupyterlite/
+
+      - name: Verify JupyterLite build produced output
+        working-directory: jupyterlite
+        run: |
+          test -d _output && test -n "$(ls -A _output)"
+
+      - name: Assemble preview site (welcome + slides + IDE + jupyterlite + sample-package)
         run: |
           set -e
           rm -rf _site
@@ -70,6 +91,8 @@ jobs:
           cp -r web/. _site/
           mkdir -p _site/playground
           cp -r app/dist/. _site/playground/
+          mkdir -p _site/jupyterlite
+          cp -r jupyterlite/_output/. _site/jupyterlite/
           if [ -d _site/playground/sample-package ]; then
             rm -rf _site/sample-package
             mv _site/playground/sample-package _site/sample-package
@@ -103,6 +126,7 @@ jobs:
               `- Welcome page: ${base}`,
               `- Findings slides: ${base}slides/`,
               `- IDE: ${base}playground/`,
+              `- JupyterLite demo: ${base}jupyterlite/`,
               '',
               `Built from \`${sha}\`. Updates on every push to this PR; removed when the PR closes.`,
             ].join('\n');

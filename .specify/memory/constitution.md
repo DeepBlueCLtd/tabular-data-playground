@@ -1,6 +1,37 @@
 <!--
 SYNC IMPACT REPORT
-Version change: 2.0.0 → 2.1.0
+Version change: 2.1.0 → 2.2.0
+Bump rationale: Technology Constraints materially expanded (MINOR) — a new
+"JupyterLite demo" bullet added to record the JupyterLite-based in-browser
+demo sub-site (`jupyterlite/`) and its independent pin set. This is a new
+infrastructural dependency (build-time `jupyter lite build` step + its own
+`requirements.txt`), which per the section's own rule is an amendment
+rather than a plain PR. No principle changed; no Definition of Done change.
+Modified principles: none.
+Added sections: none (Technology Constraints expanded with new bullet).
+Removed sections: none.
+Templates requiring updates:
+  - .specify/templates/plan-template.md — no edit required.
+  - .specify/templates/spec-template.md — no edit required.
+  - .specify/templates/tasks-template.md — no edit required.
+  - .specify/templates/checklist-template.md — no edit required.
+Companion edits in same commit:
+  - README.md — JupyterLite/kernel pins recorded in Pinned versions table.
+  - docs/limitations.md — JupyterLite demo sharp edges enumerated.
+  - jupyterlite/ — new demo source directory.
+  - .github/workflows/deploy.yml — additive JupyterLite build step.
+  - .github/workflows/pr-preview.yml — additive JupyterLite build step.
+  - web/index.html — link to /jupyterlite/ demo added.
+
+Previous amendment (2.0.0 → 2.1.0): Technology Constraints "Python runtime"
+slot expanded to admit `livemark` (lesson 9 Livemark capstone).
+Previous amendment (1.0.0 → 2.0.0): Principle VI redefined from "Pin and
+Freeze" to "Pin Versions, Iterate Forward".
+Follow-up TODOs: None.
+-->
+
+<!--
+PREVIOUS SYNC IMPACT REPORT (2.0.0 → 2.1.0)
 Bump rationale: Technology Constraints materially expanded (MINOR) — the
 "Python runtime" slot now admits `livemark`, the Frictionless publishing
 tool used by lesson 9 (Publish with Livemark). It is pinned and installed
@@ -170,6 +201,13 @@ The v1 stack is fixed by the spec and is part of the constitutional surface
   CI smoke-tests Chromium only.
 - **Accessibility**: best-effort — keyboard-navigable, semantic HTML, no
   formal WCAG conformance commitment (decision #15).
+- **JupyterLite demo**: a self-contained in-browser demo sub-site at
+  `/jupyterlite/` built by `jupyter lite build` (build-time Python step).
+  Toolchain pins live in `jupyterlite/requirements.txt`; they are
+  **independent** of the frozen playground's Pyodide `0.27.7` pin.
+  The demo is published additively alongside `/playground/` and is
+  online-only by design (Pyodide/wheels fetched from CDN at runtime).
+  Sharp edges in `docs/limitations.md`.
 
 Substitutions within these slots (e.g. `dockview` instead of `react-mosaic`)
 are permitted and not amendments. Adding a new infrastructural dependency,
@@ -238,4 +276,4 @@ Complexity Tracking section before `/speckit-tasks` runs.
 the constitution and the codebase continue to evolve while the project
 is in its pre-production research phase.
 
-**Version**: 2.1.0 | **Ratified**: 2026-05-08 | **Last Amended**: 2026-06-10
+**Version**: 2.2.0 | **Ratified**: 2026-05-08 | **Last Amended**: 2026-07-04

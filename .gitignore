@@ -145,3 +145,4 @@ vite.config.ts.timestamp-*
 # Claude Code local/user-specific artifacts (skills under .claude/skills/ are tracked)
 .claude/settings.local.json
 .claude/.credentials.json
+.jupyterlite.doit.db
