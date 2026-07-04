@@ -3,6 +3,7 @@ For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the spec at
 `spec.md` and the constitution at `.specify/memory/constitution.md`.
 Active per-item plans live under `specs/<NNN-slug>/plan.md`.
+Current active plan: `specs/049-jupyterlite-demo/plan.md`.
 <!-- SPECKIT END -->
 
 # Spec-Driven Development on a Project Board
