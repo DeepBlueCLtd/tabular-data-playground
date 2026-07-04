@@ -4,13 +4,25 @@
     "appUrl": "./lab",
     "appVersion": "0.8.0",
     "baseUrl": "./",
+    "contentsAllJsonFile": "all.json",
     "defaultKernelName": "python",
+    "disabledExtensions": [
+      "@jupyterlab/cell-toolbar-extension",
+      "@jupyterlab/debugger-extension",
+      "@jupyterlab/git-extension"
+    ],
     "faviconUrl": "./lab/favicon.ico",
     "federated_extensions": [
       {
         "extension": "./extension",
         "load": "static/remoteEntry.af5d2dda3bb046a0.js",
         "name": "@jupyterlite/pyodide-kernel-extension"
+      },
+      {
+        "extension": "./extension",
+        "load": "static/remoteEntry.5cbb9d2323598fbda535.js",
+        "name": "jupyterlab_pygments",
+        "style": "./style"
       }
     ],
     "fileTypes": {

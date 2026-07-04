@@ -1,0 +1,29 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2026-07-04T17:28:33.467421Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-07-04T17:28:11.697761Z",
+      "mimetype": "text/csv",
+      "name": "sample.csv",
+      "path": "data/sample.csv",
+      "size": 1252,
+      "type": "file",
+      "writable": true
+    }
+  ],
+  "created": "2026-07-04T17:28:33.467421Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2026-07-04T17:28:33.467421Z",
+  "mimetype": null,
+  "name": "data",
+  "path": "data",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}
