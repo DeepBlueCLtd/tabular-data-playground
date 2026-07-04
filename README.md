@@ -93,6 +93,7 @@ the lessons in `content/lessons/` were authored against.
 | reveal.js (findings slides) | `5.1.0` | Loaded by `web/slides/index.html` from `https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/` — the URL is the pin. |
 | JupyterLite core (demo) | `0.8.0` | `jupyterlite/requirements.txt`; **independent** of the frozen playground's Pyodide pin. |
 | JupyterLite Pyodide kernel (demo) | `0.8.1` | `jupyterlite/requirements.txt`; bundled Pyodide version determined by the kernel release. |
+| jupyter-server (demo build) | `2.20.0` | `jupyterlite/requirements.txt`; required by `jupyterlite-core` to index and serve custom content files. |
 | matplotlib (demo, in-browser) | runtime (Pyodide wheel) | Installed in-browser via `%pip install matplotlib` in the demo notebook; version resolved from the JupyterLite Pyodide kernel's bundled wheel index. |
 
 The editor still attempts a runtime fetch of the canonical schemas

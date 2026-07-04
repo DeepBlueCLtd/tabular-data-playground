@@ -61,6 +61,7 @@ verifying the demo notebook still renders correctly, and update the
 |---------|---------|
 | jupyterlite-core | 0.8.0 |
 | jupyterlite-pyodide-kernel | 0.8.1 |
+| jupyter-server | 2.20.0 |
 
 ## Directory layout
 
