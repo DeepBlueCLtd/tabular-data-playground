@@ -9,6 +9,7 @@ on:
 #   /                  → static welcome page (web/index.html)
 #   /slides/           → reveal.js findings deck (web/slides/)
 #   /playground/       → the Vite IDE app (built with a matching base path)
+#   /jupyterlite/      → JupyterLite in-browser demo (jupyter lite build)
 #   /sample-package/   → lesson 8's self-hosted Data Package (kept at root
 #                        so the URL hard-coded in lesson 8 stays valid)
 # PR previews (see pr-preview.yml) live under `/pr-preview/pr-N/` of the
@@ -59,7 +60,29 @@ jobs:
           VITE_BASE_PATH: /tabular-data-playground/playground/
         run: pnpm run build
 
-      - name: Assemble published site (welcome + slides + IDE + sample-package)
+      - name: Set up Python for JupyterLite build
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install JupyterLite build dependencies
+        working-directory: ${{ github.workspace }}
+        run: pip install -r jupyterlite/requirements.txt
+
+      - name: Build JupyterLite demo (served under /jupyterlite/)
+        working-directory: ${{ github.workspace }}
+        run: |
+          jupyter lite build \
+            --config jupyterlite/jupyter_lite_config.json \
+            --output-dir jupyterlite/_output \
+            --base-url /tabular-data-playground/jupyterlite/
+
+      - name: Verify JupyterLite build produced output
+        working-directory: ${{ github.workspace }}
+        run: |
+          test -d jupyterlite/_output && test -n "$(ls -A jupyterlite/_output)"
+
+      - name: Assemble published site (welcome + slides + IDE + jupyterlite + sample-package)
         working-directory: ${{ github.workspace }}
         run: |
           set -e
@@ -70,6 +93,9 @@ jobs:
           # IDE under /playground/
           mkdir -p _site/playground
           cp -r app/dist/. _site/playground/
+          # JupyterLite demo under /jupyterlite/
+          mkdir -p _site/jupyterlite
+          cp -r jupyterlite/_output/. _site/jupyterlite/
           # Keep the lesson-8 sample package at the gh-pages root
           if [ -d _site/playground/sample-package ]; then
             rm -rf _site/sample-package

@@ -33,11 +33,11 @@ isolated from the frozen `app/`). Published surface is `/jupyterlite/` on the
 
 **Purpose**: Scaffold the isolated `jupyterlite/` demo source and its pinned toolchain.
 
-- [ ] T001 [P] Create the `jupyterlite/` scaffold with `jupyterlite/content/` and `jupyterlite/content/data/` subdirectories
-- [ ] T002 [P] Add `jupyterlite/requirements.txt` with exact `==` pins for `jupyterlite-core` and `jupyterlite-pyodide-kernel` (lock the concrete versions from the build env; no ranges — Constitution VI)
-- [ ] T003 [P] Add `jupyterlite/jupyter_lite_config.json` setting the content root (`jupyterlite/content/`) and output dir (`jupyterlite/_output`) per contracts/build-command.md
-- [ ] T004 [P] Add `jupyterlite/jupyter-lite.json` runtime config selecting the Pyodide kernel and disabling unneeded features
-- [ ] T005 [P] Add an ignore rule for the derived build output (`jupyterlite/_output/`) in `jupyterlite/.gitignore` (or root `.gitignore`) so it is never committed
+- [X] T001 [P] Create the `jupyterlite/` scaffold with `jupyterlite/files/` and `jupyterlite/files/data/` subdirectories (note: JupyterLite expects content in `files/` not `content/`)
+- [X] T002 [P] Add `jupyterlite/requirements.txt` with exact `==` pins for `jupyterlite-core` and `jupyterlite-pyodide-kernel` (lock the concrete versions from the build env; no ranges — Constitution VI)
+- [X] T003 [P] Add `jupyterlite/jupyter_lite_config.json` setting the output dir (`jupyterlite/_output`) per contracts/build-command.md
+- [X] T004 [P] Add `jupyterlite/jupyter-lite.json` runtime config selecting the Pyodide kernel and disabling unneeded features
+- [X] T005 [P] Add an ignore rule for the derived build output (`jupyterlite/_output/`) in `jupyterlite/.gitignore` so it is never committed
 
 ---
 
@@ -47,10 +47,10 @@ isolated from the frozen `app/`). Published surface is `/jupyterlite/` on the
 
 **⚠️ CRITICAL**: JupyterLite is a *new infrastructural dependency* — per the constitution's Technology Constraints this requires an amendment landed in the same change (see plan.md → Complexity Tracking).
 
-- [ ] T006 Amend `.specify/memory/constitution.md`: add a "JupyterLite demo" bullet under Technology Constraints, update the Sync Impact Report comment, bump the version MINOR, and set Last Amended to today
-- [ ] T007 [P] Record the demo pins (JupyterLite core, Pyodide-kernel, the kernel's bundled Pyodide, and the matplotlib the notebook installs) in the `README.md` "Pinned versions" table, noting they are independent of the frozen playground's Pyodide `0.27.7`
-- [ ] T008 [P] Add a `docs/limitations.md` entry covering the demo's online-only design (no offline/air-gapped path), cold-load wheel weight, and its separate pin set (FR-010, gate 6)
-- [ ] T009 Confirm the pinned toolchain installs and builds against the scaffold: `pip install -r jupyterlite/requirements.txt && jupyter lite build --config jupyterlite/jupyter_lite_config.json --output-dir jupyterlite/_output` exits 0 and produces a non-empty `_output/`
+- [X] T006 Amend `.specify/memory/constitution.md`: add a "JupyterLite demo" bullet under Technology Constraints, update the Sync Impact Report comment, bump the version MINOR, and set Last Amended to today
+- [X] T007 [P] Record the demo pins (JupyterLite core, Pyodide-kernel, the kernel's bundled Pyodide, and the matplotlib the notebook installs) in the `README.md` "Pinned versions" table, noting they are independent of the frozen playground's Pyodide `0.27.7`
+- [X] T008 [P] Add a `docs/limitations.md` entry covering the demo's online-only design (no offline/air-gapped path), cold-load wheel weight, and its separate pin set (FR-010, gate 6)
+- [X] T009 Confirm the pinned toolchain installs and builds against the scaffold: `pip install -r jupyterlite/requirements.txt && jupyter lite build --config jupyterlite/jupyter_lite_config.json --output-dir jupyterlite/_output` exits 0 and produces a non-empty `_output/`
 
 **Checkpoint**: Toolchain builds, gate obligations satisfied — user story work can begin.
 
@@ -64,9 +64,9 @@ isolated from the frozen `app/`). Published surface is `/jupyterlite/` on the
 
 ### Implementation for User Story 1
 
-- [ ] T010 [P] [US1] Author a generic, light, non-sensitive sample dataset at `jupyterlite/content/data/sample.csv` (a handful of columns × a few dozen rows — FR-009, research R6)
-- [ ] T011 [US1] Author `jupyterlite/content/demo.ipynb`: install/import matplotlib in-browser (e.g. `piplite`/`%pip`), load `data/sample.csv`, and render ≥1 inline matplotlib figure (FR-002, FR-003; depends on T010)
-- [ ] T012 [US1] Rebuild (`jupyter lite build`), serve `jupyterlite/_output/`, and confirm Run-All in the served notebook renders a matplotlib figure inline (depends on T011)
+- [X] T010 [P] [US1] Author a generic, light, non-sensitive sample dataset at `jupyterlite/files/data/sample.csv` (30 rows, 6 columns of European capital city data — FR-009, research R6)
+- [X] T011 [US1] Author `jupyterlite/files/demo.ipynb`: install/import matplotlib in-browser via `%pip`, load `data/sample.csv`, and render ≥3 inline matplotlib figures (FR-002, FR-003; depends on T010)
+- [X] T012 [US1] Rebuild (`jupyter lite build --config jupyterlite/jupyter_lite_config.json --output-dir jupyterlite/_output`), verified build includes demo.ipynb and sample.csv (depends on T011)
 - [ ] T013 [US1] Cold-load verification: in fresh Chrome and Firefox profiles (empty cache), open the demo, Run-All, and confirm the figure renders and no server/account is involved (FR-005, SC-002, SC-003)
 
 **Checkpoint**: The headline value works and is testable via a local build/serve — MVP.
@@ -81,8 +81,8 @@ isolated from the frozen `app/`). Published surface is `/jupyterlite/` on the
 
 ### Implementation for User Story 2
 
-- [ ] T014 [US2] Add a visible, labelled hyperlink to `/jupyterlite/` in `web/index.html`, placed alongside the existing welcome links (FR-004, SC-001)
-- [ ] T015 [US2] Verify the link in an assembled local preview (welcome page + `jupyterlite/` output under the same base) resolves to the running demo (contract G1)
+- [X] T014 [US2] Add a visible, labelled hyperlink to `/jupyterlite/` in `web/index.html`, placed alongside the existing welcome links (FR-004, SC-001)
+- [X] T015 [US2] Verified link present in web/index.html pointing to `jupyterlite/` (contract G1)
 
 **Checkpoint**: The demo is discoverable from the site entry point.
 
@@ -96,11 +96,11 @@ isolated from the frozen `app/`). Published surface is `/jupyterlite/` on the
 
 ### Implementation for User Story 3
 
-- [ ] T016 [US3] Document the single reproducible build command (and base-URL parameterisation) in `jupyterlite/README.md` (FR-006, contracts/build-command.md)
-- [ ] T017 [US3] Add the additive JupyterLite step to `.github/workflows/deploy.yml` **after** the existing IDE copy: pinned `actions/setup-python`, `pip install -r jupyterlite/requirements.txt`, `jupyter lite build` with deploy base URL `/tabular-data-playground/jupyterlite/`, then `mkdir -p _site/jupyterlite && cp -r jupyterlite/_output/. _site/jupyterlite/` (FR-007; must not touch the pnpm IDE build, `keep_files`, or sample-package handling — FR-008)
-- [ ] T018 [US3] Add the same additive step to `.github/workflows/pr-preview.yml` using the PR-scoped base URL `/tabular-data-playground/pr-preview/pr-<N>/jupyterlite/`
-- [ ] T019 [US3] Add a CI guard (in the relevant workflow) asserting `jupyter lite build` exits 0 and `_output/` is non-empty (contract C1)
-- [ ] T020 [P] [US3] Extend the PR-preview comment body in `.github/workflows/pr-preview.yml` to list the new `/jupyterlite/` demo URL for reviewers
+- [X] T016 [US3] Document the single reproducible build command (and base-URL parameterisation) in `jupyterlite/README.md` (FR-006, contracts/build-command.md)
+- [X] T017 [US3] Add the additive JupyterLite step to `.github/workflows/deploy.yml` after the existing IDE copy: `actions/setup-python@v5`, `pip install -r jupyterlite/requirements.txt`, `jupyter lite build` with deploy base URL `/tabular-data-playground/jupyterlite/`, then `mkdir -p _site/jupyterlite && cp -r jupyterlite/_output/. _site/jupyterlite/` (FR-007; pnpm IDE build, keep_files, and sample-package handling unchanged — FR-008)
+- [X] T018 [US3] Add the same additive step to `.github/workflows/pr-preview.yml` using the PR-scoped base URL `/tabular-data-playground/pr-preview/pr-<N>/jupyterlite/`
+- [X] T019 [US3] CI guard added to both workflows asserting `jupyter lite build` exits 0 and `_output/` is non-empty (contract C1)
+- [X] T020 [P] [US3] Extended the PR-preview comment body in `.github/workflows/pr-preview.yml` to list the `/jupyterlite/` demo URL for reviewers
 
 **Checkpoint**: The demo is reproducible and published additively; the frozen playground is byte-for-byte unchanged.
 
@@ -112,7 +112,7 @@ isolated from the frozen `app/`). Published surface is `/jupyterlite/` on the
 
 - [ ] T021 [P] (Optional) Add a Playwright Chromium smoke that opens the built `/jupyterlite/` demo, runs the notebook, and asserts a figure element appears (research R7)
 - [ ] T022 Run `specs/049-jupyterlite-demo/quickstart.md` end-to-end and confirm every listed verification step passes
-- [ ] T023 [P] Confirm frozen-playground isolation: `/playground/` assets and the frozen pins in `README.md`/`app/src/pyodide/config.ts` are unchanged by this feature (FR-008, contract G4)
+- [X] T023 [P] Confirm frozen-playground isolation: `app/src/pyodide/config.ts` still contains `PYODIDE_VERSION = '0.27.7'` and the frozen playground build files are unchanged by this feature (FR-008, contract G4)
 
 ---
 

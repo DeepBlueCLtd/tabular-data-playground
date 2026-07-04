@@ -1,0 +1,4 @@
+_output/
+__pycache__/
+*.pyc
+.jupyterlite.doit.db

@@ -480,3 +480,38 @@ double-Tab listing. xterm.js's default `bellStyle` is silent
 This is a deliberate choice (classroom/demo context); enabling
 a bell sound would require shipping an audio asset and is out
 of scope.
+
+## JupyterLite demo findings
+
+### Demo is online-only (no offline / air-gapped path)
+
+The JupyterLite demo at `/jupyterlite/` relies on CDN-hosted
+Pyodide and wheel packages fetched at runtime by the
+JupyterLite Pyodide kernel. A visitor without internet access
+will see the notebook interface but cells that trigger
+`%pip install` or import a non-bundled package will fail
+silently or with a network error. There is no offline fallback
+and no service-worker caching of the wheel files. This is
+deliberate — bundling the full Pyodide + matplotlib wheel set
+into the repo would add tens of MB of binary content.
+
+### Cold-load wheel weight (first uncached visit)
+
+The first uncached visit fetches the Pyodide runtime (~10 MB
+compressed) plus the matplotlib wheel and its transitive
+dependencies from the Pyodide CDN. Subsequent visits are
+browser-cached. There is no hard latency budget; on a slow
+connection the first `Run All` on the demo notebook can take
+tens of seconds before the figure appears. This is an
+accepted trade-off of the CDN-delivery model.
+
+### Separate pin set — independent of the frozen playground
+
+The demo (`jupyterlite/requirements.txt`) carries its own
+`jupyterlite-core` and `jupyterlite-pyodide-kernel` pins,
+decoupled from the frozen playground's Pyodide `0.27.7`.
+Bumping either set does not affect the other, but they must
+be kept consistent within each context: the playground's
+Frictionless lessons were authored against Pyodide `0.27.7`
+and bumping that pin risks lesson regression. The demo pins
+are independent and can be bumped separately.
